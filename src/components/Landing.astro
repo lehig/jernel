@@ -1,0 +1,82 @@
+<div id="container">
+    <div class="glass-container">
+        <h1>Jernel</h1>
+
+        <h2>
+            You're the one given the prompt and generate your own story.
+        </h2>
+        <hr />
+        <p>Click the button below to get started</p>
+        <a href="/Prompt" class="btn">Click Me</a>
+    </div>
+</div>
+
+<style>
+    #container {
+        font-family:
+            Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial,
+            sans-serif;
+        height: 100%;
+        text-align: center;
+    }
+
+    main {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    h1 {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    p {
+        font-size: 1rem;
+        font-weight: normal;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+
+        background: rgba(202, 202, 202, 0.6);
+        color: #000000;
+        font-size: 1rem;
+        cursor: pointer;
+
+        backdrop-filter: blur(6px);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn:hover {
+        background: rgba(187, 187, 187, 0.85);
+        border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .glass-container {
+        margin-top: 2rem;
+        padding: 2rem 2.25rem;
+        color: #000000;
+
+        /* Premium Glass look */
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        max-width: 1000px;
+        margin: 0 auto;
+        margin-top: 5rem;
+
+        /* Depth */
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+</style>
