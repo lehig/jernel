@@ -1,0 +1,423 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { prompts } from "../../data/prompts.js";
+
+export function getStaticPaths() {
+  return [
+    { params: { category: "fiction" } },
+    { params: { category: "personal" } },
+  ];
+}
+
+const { category } = Astro.params;
+const categoryPrompts = prompts[category] || [];
+const title = category === "fiction" ? "Fiction Prompt | Jernal" : "Personal Prompt | Jernal";
+const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
+---
+
+<Layout title={title}>
+  <div id="container" class={themeClass}>
+    <div class="glass-container workspace-card">
+      <div class="workspace-header">
+        <span class="category-badge">{category.toUpperCase()} PROMPT</span>
+        <span class="date-badge" id="date-display">Today's Date</span>
+      </div>
+
+      <div class="prompt-section">
+        <p class="prompt-intro">Today's Topic:</p>
+        <blockquote class="prompt-blockquote">
+          <p id="prompt-text" class="prompt-text">Loading today's prompt...</p>
+        </blockquote>
+      </div>
+
+      <div class="editor-section">
+        <textarea
+          id="writing-area"
+          placeholder="Start typing your response here... Let your creativity flow."
+          autocomplete="off"
+          spellcheck="true"
+        ></textarea>
+        
+        <div class="stats-footer">
+          <span id="word-count" class="stat-item">0 words</span>
+          <span id="char-count" class="stat-item">0 characters</span>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <a href="/prompt" class="btn-back">Back to Prompts</a>
+        <div class="magnet-wrapper">
+          <button id="copy-btn" class="btn-cta-writing">Copy Response</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Response copied to clipboard!</div>
+</Layout>
+
+<style>
+  /* Base Container centering */
+  #container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 90px 1.5rem 40px 1.5rem; /* Space for navbar */
+  }
+
+  /* Themes Variables mapping */
+  .theme-fiction {
+    --theme-color: var(--color-red);
+    --theme-color-light: var(--color-red-light);
+    --theme-color-dark: var(--color-red-dark);
+    --theme-shadow-color: rgba(216, 30, 91, 0.35);
+    --theme-shadow-glow: rgba(216, 30, 91, 0.15);
+  }
+
+  .theme-personal {
+    --theme-color: var(--color-blue);
+    --theme-color-light: var(--color-blue-light);
+    --theme-color-dark: var(--color-blue-dark);
+    --theme-shadow-color: rgba(0, 207, 193, 0.35);
+    --theme-shadow-glow: rgba(0, 207, 193, 0.15);
+  }
+
+  /* Workspace Card styling */
+  .workspace-card {
+    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    text-align: left;
+    color: var(--color-cream-light);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .workspace-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 1rem;
+  }
+
+  .category-badge {
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--theme-color-light);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    border: 1px solid var(--theme-color-dark);
+    box-shadow: 0 0 10px var(--theme-shadow-glow);
+  }
+
+  .date-badge {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-cream-dark);
+  }
+
+  .prompt-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prompt-intro {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-cream-dark);
+    margin: 0;
+  }
+
+  .prompt-blockquote {
+    margin: 0;
+    padding: 1.2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 4px solid var(--theme-color);
+    border-radius: 0 12px 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+  }
+
+  .prompt-text {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Textarea Editor */
+  .editor-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  #writing-area {
+    width: 100%;
+    min-height: 320px;
+    padding: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    resize: vertical;
+    outline: none;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  #writing-area::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  #writing-area:focus {
+    border-color: var(--theme-color-light);
+    box-shadow: 
+      inset 0 2px 8px rgba(0, 0, 0, 0.4),
+      0 0 20px var(--theme-shadow-glow),
+      0 0 2px var(--theme-color-light);
+  }
+
+  .stats-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .stat-item {
+    font-size: 0.85rem;
+    color: var(--color-cream-dark);
+    font-weight: 500;
+  }
+
+  /* Actions Section */
+  .actions-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  .btn-back {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-cream-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-back:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .magnet-wrapper {
+    display: inline-block;
+    padding: 10px 15px;
+    position: relative;
+  }
+
+  /* CTA Button Writing */
+  .btn-cta-writing {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--theme-color-dark);
+    background: linear-gradient(
+      135deg,
+      var(--color-cream-dark) 0%,
+      var(--color-cream) 100%
+    );
+    color: var(--theme-color-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    transform: translate(var(--mx, 0px), var(--my, 0px));
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    will-change: transform;
+  }
+
+  .btn-cta-writing:hover {
+    border-color: var(--theme-color-light);
+    box-shadow:
+      0 0 15px var(--theme-shadow-color),
+      0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 0.85rem 1.75rem;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    opacity: 0;
+  }
+
+  .toast.show {
+    bottom: 40px;
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    #container {
+      padding-top: 80px;
+    }
+    .workspace-card {
+      padding: 1.5rem 1.25rem;
+      gap: 1.5rem;
+    }
+    .workspace-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .actions-section {
+      flex-direction: column-reverse;
+      gap: 1rem;
+      align-items: stretch;
+      text-align: center;
+    }
+    .btn-back {
+      text-align: center;
+    }
+    .magnet-wrapper {
+      padding: 0;
+    }
+    .btn-cta-writing {
+      width: 100%;
+      text-align: center;
+      transform: none !important;
+    }
+  }
+</style>
+
+<script define:vars={{ categoryPrompts }}>
+  // 1. SELECT TODAY'S DETERMINISTIC PROMPT
+  const today = new Date();
+  
+  // Format Date for Display
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const dateString = today.toLocaleDateString('en-US', options);
+  const dateEl = document.getElementById('date-display');
+  if (dateEl) {
+    dateEl.textContent = dateString;
+  }
+
+  // Deterministic calculation: seed based on date
+  const dateSeed = today.getFullYear() * 366 + today.getMonth() * 31 + today.getDate();
+  const promptIndex = dateSeed % categoryPrompts.length;
+  const activePrompt = categoryPrompts[promptIndex] || "No prompts found for this category.";
+
+  const promptEl = document.getElementById('prompt-text');
+  if (promptEl) {
+    promptEl.textContent = activePrompt;
+  }
+
+  // 2. TEXTAREA WORD & CHARACTER COUNTER
+  const textarea = document.getElementById('writing-area');
+  const wordCountEl = document.getElementById('word-count');
+  const charCountEl = document.getElementById('char-count');
+
+  function updateCounts() {
+    const text = textarea.value.trim();
+    
+    // Character count
+    charCountEl.textContent = `${textarea.value.length} characters`;
+
+    // Word count
+    if (text === '') {
+      wordCountEl.textContent = '0 words';
+    } else {
+      const words = text.split(/\s+/).filter(word => word.length > 0);
+      wordCountEl.textContent = `${words.length} word${words.length === 1 ? '' : 's'}`;
+    }
+  }
+
+  if (textarea) {
+    textarea.addEventListener('input', updateCounts);
+  }
+
+  // 3. COPY RESPONSE TO CLIPBOARD
+  const copyBtn = document.getElementById('copy-btn');
+  const toast = document.getElementById('toast');
+
+  if (copyBtn && textarea) {
+    copyBtn.addEventListener('click', () => {
+      const contentToCopy = textarea.value;
+      if (!contentToCopy.trim()) {
+        alert("Your response is empty! Write something first.");
+        return;
+      }
+
+      navigator.clipboard.writeText(contentToCopy).then(() => {
+        // Show custom glass toast
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    });
+  }
+
+  // 4. MAGNET CTA EFFECT
+  const wrapper = document.querySelector('.magnet-wrapper');
+  const btn = document.querySelector('.btn-cta-writing');
+
+  if (wrapper && btn && window.innerWidth > 640) {
+    wrapper.addEventListener('mousemove', (e) => {
+      const mouseEvent = e;
+      const rect = wrapper.getBoundingClientRect();
+      const x = mouseEvent.clientX - rect.left - rect.width / 2;
+      const y = mouseEvent.clientY - rect.top - rect.height / 2;
+      
+      btn.style.setProperty('--mx', `${x * 0.35}px`);
+      btn.style.setProperty('--my', `${y * 0.35}px`);
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+      btn.style.setProperty('--mx', '0px');
+      btn.style.setProperty('--my', '0px');
+    });
+  }
+</script>

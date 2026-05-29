@@ -1,0 +1,94 @@
+/* Global variables */
+:root {
+    --color-red: #D81E5B;
+    --color-red-dark: #5d1230;
+    --color-red-light: #e75a7c;
+    --color-blue: #00CFC1;
+    --color-blue-dark: #008b7c;
+    --color-blue-light: #4ddfcc;
+    --color-orange: #F0544F;
+    --color-orange-dark: #b32621;
+    --color-orange-light: #e47572;
+    --color-cream: #fdf0d5;
+    --color-cream-dark: #c9b59b;
+    --color-cream-light: #fff2e2;
+}
+
+#container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+}
+
+* {
+    font-family:
+        Inter, Roboto, "Helvetica Neue", "Arial Nova", "Nimbus Sans", Arial,
+        sans-serif;
+}
+
+body {
+    background-color: var(--color-cream);
+    /* background-image: url("../assets/background.svg"); */
+    background-size: cover;
+}
+
+main {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+p {
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+
+    background: rgba(202, 202, 202, 0.6);
+    color: #000000;
+    font-size: 1rem;
+    cursor: pointer;
+
+    backdrop-filter: blur(6px);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn:hover {
+    background: rgba(187, 187, 187, 0.85);
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.glass-container {
+    padding: 2rem 2.25rem;
+    color: var(--color-blue-dark);
+
+    /* Premium Glass look */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    max-width: 600px;
+    width: 100%;
+
+    /* Depth */
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.3);
+}

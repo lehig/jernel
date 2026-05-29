@@ -1,0 +1,195 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <span class="logo-icon">J</span>
+            <span class="logo-text">Jernal</span>
+        </a>
+
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/prompt" class="nav-link">Prompts</a>
+        </div>
+
+        <div class="nav-cta">
+            <div class="magnet-wrapper">
+                <a href="/prompt" class="btn-cta">Start Writing</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style is:global>
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        z-index: 1000;
+        background: rgba(10, 10, 10, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .nav-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Logo Styling */
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: transform 0.2s ease;
+    }
+
+    .logo:hover {
+        transform: scale(1.02);
+    }
+
+    .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-red) 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 800;
+        font-size: 1.2rem;
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Nav Links Styling */
+    .nav-links {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+        padding: 0.25rem 0;
+    }
+
+    .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(to right, var(--color-one), var(--color-two));
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .nav-link:hover {
+        color: #ffffff;
+    }
+
+    .nav-link:hover::after {
+        width: 100%;
+    }
+
+    .magnet-wrapper {
+        display: inline-block;
+        padding: 10px 15px;
+        position: relative;
+    }
+
+    /* CTA Button Styling */
+    .btn-cta {
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        border-radius: 20px;
+        border: 1px solid var(--color-blue-dark);
+        background: linear-gradient(
+            135deg,
+            var(--color-cream-dark) 0%,
+            var(--color-cream) 100%
+        );
+        color: var(--color-blue-dark);
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: translate(var(--mx, 0px), var(--my, 0px));
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        will-change: transform;
+    }
+
+    .btn-cta:hover {
+        border-color: var(--color-blue);
+        box-shadow:
+            0 0 15px var(--color-blue-dark),
+            0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 640px) {
+        .nav-container {
+            padding: 0 1rem;
+        }
+        .nav-links {
+            gap: 1rem;
+        }
+        .btn-cta {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    const wrappers = document.querySelectorAll('.navbar .magnet-wrapper');
+
+    wrappers.forEach((wrapper) => {
+        const btn = wrapper.querySelector('.btn-cta') as HTMLElement | null;
+        if (!btn) return;
+
+        wrapper.addEventListener('mousemove', (e) => {
+            const mouseEvent = e as MouseEvent;
+            const rect = wrapper.getBoundingClientRect();
+            // Calculate mouse coordinates relative to the center of the wrapper
+            const x = mouseEvent.clientX - rect.left - rect.width / 2;
+            const y = mouseEvent.clientY - rect.top - rect.height / 2;
+            
+            // Adjust the multiplier (0.35) to increase or decrease the magnetism strength
+            btn.style.setProperty('--mx', `${x * 0.35}px`);
+            btn.style.setProperty('--my', `${y * 0.35}px`);
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            // Reset position smoothly when mouse leaves the wrapper
+            btn.style.setProperty('--mx', '0px');
+            btn.style.setProperty('--my', '0px');
+        });
+    });
+</script>
