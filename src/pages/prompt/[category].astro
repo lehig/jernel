@@ -460,25 +460,109 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
   const categoryPrompts = JSON.parse(container?.dataset.prompts || '[]');
   const category = container?.dataset.category || '';
 
-  const today = new Date();
-  
-  // Format Date for Display
-  const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  const dateString = today.toLocaleDateString('en-US', options);
+  // Get date formatted in America/Denver timezone for display
+  const formatterDisplay = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Denver',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  const dateString = formatterDisplay.format(new Date());
   const dateEl = document.getElementById('date-display');
   if (dateEl) {
     dateEl.textContent = dateString;
   }
 
-  // Deterministic calculation: seed based on date
-  const dateSeed = today.getFullYear() * 366 + today.getMonth() * 31 + today.getDate();
-  const promptIndex = dateSeed % categoryPrompts.length;
-  const activePrompt = categoryPrompts[promptIndex] || "No prompts found for this category.";
-
-  const promptEl = document.getElementById('prompt-text');
-  if (promptEl) {
-    promptEl.textContent = activePrompt;
+  function getDenverDateString(date = new Date()) {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Denver',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    });
+    const parts = formatter.formatToParts(date);
+    const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+    const year = partMap.year;
+    const month = partMap.month.padStart(2, '0');
+    const day = partMap.day.padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
+
+  const denverDateString = getDenverDateString();
+  const cacheKey = `jernel_daily_prompt_${category}`;
+  const promptEl = document.getElementById('prompt-text');
+
+  async function loadDailyPrompt() {
+    // 1. Try checking cache
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && parsed.date === denverDateString && parsed.text) {
+          if (promptEl) {
+            promptEl.textContent = parsed.text;
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to read prompt cache:', e);
+    }
+
+    // 2. Fetch from Supabase
+    let activePrompt = "";
+    try {
+      const { data, error } = await supabase
+        .from('prompts')
+        .select('prompt_text')
+        .eq('category', category)
+        .eq('scheduled_date', denverDateString)
+        .maybeSingle();
+
+      if (data && data.prompt_text) {
+        activePrompt = data.prompt_text;
+      }
+    } catch (err) {
+      console.error('Error fetching prompt from Supabase:', err);
+    }
+
+    // 3. Fallback to deterministic static prompt
+    if (!activePrompt) {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Denver',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      });
+      const parts = formatter.formatToParts(new Date());
+      const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+      const y = parseInt(partMap.year, 10);
+      const m = parseInt(partMap.month, 10);
+      const d = parseInt(partMap.day, 10);
+
+      const dateSeed = y * 366 + m * 31 + d;
+      const promptIndex = dateSeed % categoryPrompts.length;
+      activePrompt = categoryPrompts[promptIndex] || "No prompts found for this category.";
+    }
+
+    // 4. Update UI
+    if (promptEl) {
+      promptEl.textContent = activePrompt;
+    }
+
+    // 5. Store in Cache
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({
+        date: denverDateString,
+        text: activePrompt
+      }));
+    } catch (e) {
+      console.warn('Failed to write prompt cache:', e);
+    }
+  }
+
+  loadDailyPrompt();
 
   // 2. TEXTAREA & ACTIONS
   const textarea = document.getElementById('writing-area') as HTMLTextAreaElement | null;

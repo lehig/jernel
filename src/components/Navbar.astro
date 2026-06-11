@@ -10,6 +10,7 @@
             <a href="/feed" class="nav-link">Feed</a>
             <a href="/prompt" class="nav-link">Prompts</a>
             <a href="/profile" class="nav-link auth-only" style="display: none;">My Profile</a>
+            <a href="/admin" class="nav-link admin-only" style="display: none;">Admin</a>
         </div>
 
         <div class="nav-cta">
@@ -207,16 +208,42 @@
     // 1. Auth Toggle UI Elements
     const authOnlyElements = document.querySelectorAll('.auth-only') as NodeListOf<HTMLElement>;
     const guestOnlyElements = document.querySelectorAll('.guest-only') as NodeListOf<HTMLElement>;
+    const adminOnlyElements = document.querySelectorAll('.admin-only') as NodeListOf<HTMLElement>;
     const signinBtn = document.getElementById('nav-signin-btn');
     const signoutBtn = document.getElementById('nav-signout-btn');
+
+    async function checkAdmin(session: any) {
+        if (!session) {
+            adminOnlyElements.forEach(el => el.style.display = 'none');
+            return;
+        }
+        try {
+            const { data, error } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('id', session.user.id)
+                .maybeSingle();
+
+            if (data) {
+                adminOnlyElements.forEach(el => el.style.display = 'inline-block');
+            } else {
+                adminOnlyElements.forEach(el => el.style.display = 'none');
+            }
+        } catch (err) {
+            console.error('Error checking admin status:', err);
+            adminOnlyElements.forEach(el => el.style.display = 'none');
+        }
+    }
 
     function updateAuthUI(session: any) {
         if (session) {
             authOnlyElements.forEach(el => el.style.display = 'inline-block');
             guestOnlyElements.forEach(el => el.style.display = 'none');
+            checkAdmin(session);
         } else {
             authOnlyElements.forEach(el => el.style.display = 'none');
             guestOnlyElements.forEach(el => el.style.display = 'inline-block');
+            adminOnlyElements.forEach(el => el.style.display = 'none');
         }
     }
 
