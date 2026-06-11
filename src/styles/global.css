@@ -30,8 +30,7 @@
 }
 
 body {
-    background-color: var(--color-cream);
-    /* background-image: url("../assets/background.svg"); */
+    background-color: #c4a288; /* Deep obsidian dark base for premium contrast */
     background-size: cover;
 }
 

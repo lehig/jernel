@@ -1,0 +1,476 @@
+---
+// src/components/AuthModal.astro
+---
+
+<div id="auth-modal" class="auth-overlay">
+  <div class="auth-modal-card glass-container">
+    <button id="close-auth-modal" class="btn-close" aria-label="Close modal">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div class="auth-header">
+      <h2 id="auth-title">Welcome to Jernal</h2>
+      <p id="auth-subtitle">Sign in to save your writing responses to your profile.</p>
+    </div>
+
+    <!-- Toggle Tabs -->
+    <div class="auth-tabs">
+      <button id="tab-signin" class="auth-tab active">Sign In</button>
+      <button id="tab-signup" class="auth-tab">Sign Up</button>
+    </div>
+
+    <form id="auth-form" class="auth-form">
+      <div class="form-group" id="group-display-name" style="display: none;">
+        <label for="auth-display-name">Display Name</label>
+        <input 
+          type="text" 
+          id="auth-display-name" 
+          placeholder="Your nickname" 
+          autocomplete="name"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="auth-email">Email Address</label>
+        <input 
+          type="email" 
+          id="auth-email" 
+          placeholder="you@example.com" 
+          required 
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="auth-password">Password</label>
+        <input 
+          type="password" 
+          id="auth-password" 
+          placeholder="••••••••" 
+          required 
+          autocomplete="current-password"
+        />
+      </div>
+
+      <div id="auth-error-msg" class="auth-message error" style="display: none;"></div>
+      <div id="auth-success-msg" class="auth-message success" style="display: none;"></div>
+
+      <button type="submit" id="auth-submit-btn" class="btn-auth-submit">
+        <span>Sign In</span>
+        <span class="spinner" style="display: none;"></span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<style>
+  .auth-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(5, 5, 5, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    padding: 1.5rem;
+  }
+
+  .auth-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .auth-modal-card {
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2.5rem 2rem;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      0 20px 50px rgba(0, 0, 0, 0.6),
+      0 0 30px rgba(0, 207, 193, 0.05);
+  }
+
+  .btn-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .btn-close:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+    transform: rotate(90deg);
+  }
+
+  .auth-header h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--color-blue-light) 0%, var(--color-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .auth-header p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .auth-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 1rem;
+  }
+
+  .auth-tab {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    position: relative;
+    transition: color 0.2s ease;
+  }
+
+  .auth-tab:hover {
+    color: #ffffff;
+  }
+
+  .auth-tab.active {
+    color: var(--color-blue-light);
+  }
+
+  .auth-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-blue);
+    border-radius: 2px;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.02em;
+  }
+
+  .form-group input {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.25s ease;
+  }
+
+  .form-group input:focus {
+    border-color: var(--color-blue-light);
+    box-shadow: 
+      0 0 10px rgba(0, 207, 193, 0.15),
+      inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .auth-message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .auth-message.error {
+    background: rgba(240, 84, 79, 0.1);
+    border: 1px solid rgba(240, 84, 79, 0.2);
+    color: var(--color-orange-light);
+  }
+
+  .auth-message.success {
+    background: rgba(0, 207, 193, 0.1);
+    border: 1px solid rgba(0, 207, 193, 0.2);
+    color: var(--color-blue-light);
+  }
+
+  .btn-auth-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-blue-dark);
+    background: linear-gradient(135deg, var(--color-blue-dark) 0%, var(--color-blue) 100%);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-auth-submit:hover {
+    border-color: var(--color-blue-light);
+    box-shadow: 0 0 15px rgba(0, 207, 193, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-auth-submit:active {
+    transform: translateY(0);
+  }
+
+  .btn-auth-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  import { supabase } from '../lib/supabaseClient.js';
+
+  const modal = document.getElementById('auth-modal');
+  const closeBtn = document.getElementById('close-auth-modal');
+  const tabSignIn = document.getElementById('tab-signin');
+  const tabSignUp = document.getElementById('tab-signup');
+  const displayNameGroup = document.getElementById('group-display-name');
+  const displayNameInput = document.getElementById('auth-display-name') as HTMLInputElement | null;
+  const emailInput = document.getElementById('auth-email') as HTMLInputElement | null;
+  const passwordInput = document.getElementById('auth-password') as HTMLInputElement | null;
+  const form = document.getElementById('auth-form') as HTMLFormElement | null;
+  const submitBtn = document.getElementById('auth-submit-btn') as HTMLButtonElement | null;
+  const submitBtnText = submitBtn?.querySelector('span:not(.spinner)');
+  const submitBtnSpinner = submitBtn?.querySelector('.spinner') as HTMLElement | null;
+  const errorMsg = document.getElementById('auth-error-msg');
+  const successMsg = document.getElementById('auth-success-msg');
+  const authTitle = document.getElementById('auth-title');
+  const authSubtitle = document.getElementById('auth-subtitle');
+
+  let currentMode: 'signin' | 'signup' = 'signin';
+  let postAuthCallback: (() => void) | null = null;
+
+  // Function to show the modal
+  function showModal(callback?: () => void, message?: string) {
+    postAuthCallback = callback || null;
+    if (message && authSubtitle) {
+      authSubtitle.textContent = message;
+    } else if (authSubtitle) {
+      authSubtitle.textContent = 'Sign in to save your writing responses to your profile.';
+    }
+    
+    // Reset form
+    if (form) form.reset();
+    hideMessages();
+    setMode('signin');
+    
+    modal?.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  // Function to hide the modal
+  function hideModal() {
+    modal?.classList.remove('active');
+    document.body.style.overflow = '';
+    postAuthCallback = null;
+  }
+
+  function hideMessages() {
+    if (errorMsg) {
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
+    }
+    if (successMsg) {
+      successMsg.style.display = 'none';
+      successMsg.textContent = '';
+    }
+  }
+
+  function showError(msg: string) {
+    if (errorMsg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    }
+    if (successMsg) successMsg.style.display = 'none';
+  }
+
+  function showSuccess(msg: string) {
+    if (successMsg) {
+      successMsg.textContent = msg;
+      successMsg.style.display = 'block';
+    }
+    if (errorMsg) errorMsg.style.display = 'none';
+  }
+
+  // Toggle modes
+  function setMode(mode: 'signin' | 'signup') {
+    currentMode = mode;
+    hideMessages();
+    
+    if (mode === 'signin') {
+      tabSignIn?.classList.add('active');
+      tabSignUp?.classList.remove('active');
+      if (displayNameGroup) displayNameGroup.style.display = 'none';
+      if (displayNameInput) displayNameInput.removeAttribute('required');
+      if (authTitle) authTitle.textContent = 'Welcome Back';
+      if (submitBtnText) submitBtnText.textContent = 'Sign In';
+      if (passwordInput) passwordInput.placeholder = '••••••••';
+    } else {
+      tabSignUp?.classList.add('active');
+      tabSignIn?.classList.remove('active');
+      if (displayNameGroup) displayNameGroup.style.display = 'flex';
+      if (displayNameInput) displayNameInput.setAttribute('required', 'true');
+      if (authTitle) authTitle.textContent = 'Create an Account';
+      if (submitBtnText) submitBtnText.textContent = 'Create Account';
+      if (passwordInput) passwordInput.placeholder = 'Min. 6 characters';
+    }
+  }
+
+  // Event Listeners
+  closeBtn?.addEventListener('click', hideModal);
+  
+  // Clicking outside card closes modal
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      hideModal();
+    }
+  });
+
+  tabSignIn?.addEventListener('click', () => setMode('signin'));
+  tabSignUp?.addEventListener('click', () => setMode('signup'));
+
+  // Form submission
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessages();
+
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value;
+    const displayName = displayNameInput?.value.trim();
+
+    if (!email || !password) return;
+
+    // Loading state
+    if (submitBtn) submitBtn.disabled = true;
+    if (submitBtnSpinner) submitBtnSpinner.style.display = 'inline-block';
+
+    try {
+      if (currentMode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: displayName,
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          // If session is returned immediately (email confirmation disabled in Supabase config)
+          if (data.session) {
+            showSuccess('Account created and logged in!');
+            setTimeout(() => {
+              if (postAuthCallback) postAuthCallback();
+              hideModal();
+            }, 1000);
+          } else {
+            // Email confirmation enabled
+            showSuccess('Registration successful! Please check your email for a confirmation link.');
+            if (form) form.reset();
+          }
+        }
+      } else {
+        // Sign In
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) throw error;
+
+        if (data.session) {
+          showSuccess('Logged in successfully!');
+          setTimeout(() => {
+            if (postAuthCallback) postAuthCallback();
+            hideModal();
+          }, 1000);
+        }
+      }
+    } catch (err: any) {
+      console.error('Authentication error:', err);
+      showError(err.message || 'An error occurred during authentication.');
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+      if (submitBtnSpinner) submitBtnSpinner.style.display = 'none';
+    }
+  });
+
+  // Expose function globally to open the modal
+  window.addEventListener('open-auth-modal', (e: any) => {
+    const callback = e.detail?.onSuccess;
+    const message = e.detail?.message;
+    showModal(callback, message);
+  });
+</script>

@@ -1,0 +1,891 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="My Profile | Jernal">
+  <div id="profile-container">
+    
+    <!-- Guest / Unauthorized State -->
+    <div id="unauthorized-state" class="glass-container profile-card auth-prompt-card" style="display: none;">
+      <h2 class="title-gradient">Your Writing Profile</h2>
+      <p class="subtitle">Please sign in to view your saved responses and manage your profile.</p>
+      <div class="cta-center">
+        <button id="profile-signin-btn" class="btn-cta-profile">Sign In / Sign Up</button>
+      </div>
+    </div>
+
+    <!-- Authorized User State -->
+    <div id="authorized-state" class="profile-layout" style="display: none;">
+      <!-- Profile Header / Stats Card -->
+      <div class="glass-container profile-card user-header-card">
+        <div class="user-info">
+          <span class="user-avatar" id="user-avatar-char">U</span>
+          <div>
+            <h2 id="user-username" class="user-name">loading...</h2>
+            <p id="user-email" class="user-email-subtitle">Writer Profile</p>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-label">Total Written</span>
+          </div>
+          <div class="stat-card theme-fiction-stat">
+            <span class="stat-value" id="stat-fiction">0</span>
+            <span class="stat-label">Fiction</span>
+          </div>
+          <div class="stat-card theme-personal-stat">
+            <span class="stat-value" id="stat-personal">0</span>
+            <span class="stat-label">Personal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Saved Responses List -->
+      <div class="responses-section">
+        <h3 class="section-title">My Saved Responses</h3>
+        <div id="loading-responses" class="loading-state">
+          <span class="spinner"></span>
+          <p>Loading your responses...</p>
+        </div>
+        <div id="empty-responses" class="empty-state" style="display: none;">
+          <p>You haven't saved any writing responses yet.</p>
+          <a href="/prompt" class="btn-start-writing magnet-wrapper">Pick a Prompt & Write</a>
+        </div>
+        <div id="responses-list" class="responses-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Action completed!</div>
+</Layout>
+
+<style is:global>
+  #profile-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 100px 1.5rem 40px 1.5rem; /* Space for navbar */
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .profile-layout {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  .profile-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    width: 100%;
+    max-width: 800px !important;
+    margin: 0 auto;
+  }
+
+  .profile-card h2, p {
+    color: var(--color-red);
+  }
+
+  .auth-prompt-card {
+    max-width: 500px;
+    text-align: center;
+    margin-top: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 3rem 2rem;
+  }
+
+  .title-gradient {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, var(--color-blue-light) 0%, var(--color-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .cta-center {
+    margin-top: 1rem;
+  }
+
+  .btn-cta-profile {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-blue-dark);
+    background: linear-gradient(135deg, var(--color-blue-dark) 0%, var(--color-blue) 100%);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 207, 193, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .btn-cta-profile:hover {
+    border-color: var(--color-blue-light);
+    box-shadow: 0 0 20px rgba(0, 207, 193, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* User Info Card Styling */
+  .user-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 2.5rem;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-red) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 0 15px rgba(0, 207, 193, 0.25);
+  }
+
+  .user-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    word-break: break-all;
+  }
+
+  .user-email-subtitle {
+    font-size: 0.85rem;
+    color: var(--color-blue-dark);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+  }
+
+  .stats-grid {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.699);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--color-cream-light);
+    font-weight: 600;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .theme-fiction-stat {
+    border-color: #5d1230be;
+    background: rgba(216, 30, 91, 0.02);
+    color: var(--color-red-light);
+  }
+
+  .theme-personal-stat {
+    border-color: var(--color-blue-dark);
+    background: rgba(0, 207, 193, 0.02);
+    color: var(--color-blue);
+  }
+
+  /* Responses Section */
+  .responses-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    text-align: left;
+    border-left: 4px solid var(--color-blue);
+    padding-left: 0.75rem;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .loading-state, .empty-state {
+    padding: 4rem 2rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .btn-start-writing {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-blue-dark);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-blue-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-start-writing:hover {
+    background: rgba(0, 207, 193, 0.08);
+    border-color: var(--color-blue-light);
+    color: #ffffff;
+  }
+
+  .responses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    align-items: center;
+  }
+
+  /* Response Card */
+  .response-card {
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 800px !important;
+    margin: 0 auto;
+  }
+
+  .response-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.75rem;
+  }
+
+  .badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .category-badge-p {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+  }
+
+  .fiction-badge {
+    color: var(--color-red-light);
+    background: rgba(216, 30, 91, 0.05);
+    border-color: rgba(216, 30, 91, 0.3);
+  }
+
+  .personal-badge {
+    color: var(--color-blue-light);
+    background: rgba(0, 207, 193, 0.05);
+    border-color: rgba(0, 207, 193, 0.3);
+  }
+
+  .date-badge {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+  }
+
+  .response-prompt {
+    margin: 0;
+    padding: 1.2rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-left: 4px solid var(--color-blue);
+    border-radius: 0 12px 12px 0;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+    
+    /* Typography matching prompt writer page but Times New Roman */
+    font-family: "Times New Roman", Times, Baskerville, Georgia, serif;
+    font-size: 1.25rem;
+    line-height: 1.6;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    text-align: left;
+  }
+
+  .fiction-prompt-border {
+    border-left-color: var(--color-red) !important;
+  }
+
+  .personal-prompt-border {
+    border-left-color: var(--color-blue) !important;
+  }
+
+  .response-text {
+    font-family: "Times New Roman", Times, Baskerville, Georgia, serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    white-space: pre-wrap;
+    text-align: left;
+  }
+
+  .response-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  /* Action Buttons inside Card */
+  .footer-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .btn-action {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0.4rem 0.85rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .btn-action:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .btn-delete:hover {
+    background: rgba(240, 84, 79, 0.1);
+    border-color: rgba(240, 84, 79, 0.3);
+    color: var(--color-orange-light);
+  }
+
+  /* Toggle Privacy Checkbox styling */
+  .privacy-toggle {
+    display: flex;
+    align-items: center;
+  }
+
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    user-select: none;
+    padding-left: 2.25rem;
+  }
+
+  .toggle-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+
+  .toggle-checkmark {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 34px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    transition: background-color 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .toggle-checkmark:after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 1px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #cbd5e1;
+    transition: transform 0.2s ease;
+  }
+
+  .toggle-container input:checked ~ .toggle-checkmark {
+    background-color: var(--color-blue-dark);
+    border-color: var(--color-blue);
+  }
+
+  .toggle-container input:checked ~ .toggle-checkmark:after {
+    transform: translateX(16px);
+    background-color: #ffffff;
+  }
+
+  .toggle-container input:checked ~ .toggle-label {
+    color: var(--color-blue-light);
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--color-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 0.85rem 1.75rem;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    opacity: 0;
+  }
+
+  .toast.show {
+    bottom: 40px;
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    #container {
+      padding-top: 90px;
+      padding-bottom: 2rem;
+    }
+    .user-header-card {
+      padding: 1.5rem;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .stats-grid {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .stat-card {
+      padding: 0.75rem;
+      min-width: 80px;
+      flex: 1;
+    }
+    .stat-value {
+      font-size: 1.4rem;
+    }
+    .response-card {
+      padding: 1.25rem;
+      gap: 1rem;
+    }
+    .response-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .response-footer {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: 1rem;
+      width: 100%;
+    }
+    .footer-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .btn-action {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../lib/supabaseClient.js';
+
+  const guestState = document.getElementById('unauthorized-state');
+  const userState = document.getElementById('authorized-state');
+  
+  const userUsernameEl = document.getElementById('user-username');
+  const userEmailEl = document.getElementById('user-email');
+  const userAvatarCharEl = document.getElementById('user-avatar-char');
+  
+  const statTotal = document.getElementById('stat-total');
+  const statFiction = document.getElementById('stat-fiction');
+  const statPersonal = document.getElementById('stat-personal');
+  
+  const loadingState = document.getElementById('loading-responses');
+  const emptyState = document.getElementById('empty-responses');
+  const responsesList = document.getElementById('responses-list');
+  
+  const signinBtn = document.getElementById('profile-signin-btn');
+  const toast = document.getElementById('toast');
+
+  let activeSession: any = null;
+
+  function showToast(message: string) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  // 1. Initial State Check
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    activeSession = session;
+    
+    if (session) {
+      if (guestState) guestState.style.display = 'none';
+      if (userState) userState.style.display = 'flex';
+      
+      const email = session.user?.email || 'Anonymous Writer';
+      const displayName = session.user?.user_metadata?.display_name;
+      const username = displayName || email.split('@')[0] || 'Anonymous Writer';
+
+      if (userUsernameEl) userUsernameEl.textContent = username;
+      if (userEmailEl) userEmailEl.textContent = email;
+      
+      if (userAvatarCharEl) {
+        userAvatarCharEl.textContent = username.charAt(0).toUpperCase();
+      }
+
+      loadResponses();
+    } else {
+      if (userState) userState.style.display = 'none';
+      if (guestState) guestState.style.display = 'flex';
+    }
+  }
+
+  // 2. Fetch User Responses
+  async function loadResponses() {
+    if (!responsesList) return;
+    
+    if (loadingState) loadingState.style.display = 'flex';
+    if (emptyState) emptyState.style.display = 'none';
+
+    try {
+      const { data: responses, error } = await supabase
+        .from('responses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!responses || responses.length === 0) {
+        if (loadingState) loadingState.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'flex';
+        responsesList.innerHTML = '';
+        updateStats([]);
+        return;
+      }
+
+      updateStats(responses);
+
+      if (loadingState) loadingState.style.display = 'none';
+      
+      responsesList.innerHTML = '';
+      responses.forEach((resp: any) => {
+        const card = createResponseCard(resp);
+        responsesList.appendChild(card);
+      });
+
+    } catch (err: any) {
+      console.error('Error loading responses:', err);
+      responsesList.innerHTML = `<div class="loading-state"><p class="text-error">Error loading responses: ${err.message || 'Unknown error'}</p></div>`;
+      if (loadingState) loadingState.style.display = 'none';
+    }
+  }
+
+  function updateStats(responses: any[]) {
+    const total = responses.length;
+    const fiction = responses.filter(r => r.category === 'fiction').length;
+    const personal = responses.filter(r => r.category === 'personal').length;
+
+    if (statTotal) statTotal.textContent = total.toString();
+    if (statFiction) statFiction.textContent = fiction.toString();
+    if (statPersonal) statPersonal.textContent = personal.toString();
+  }
+
+  // 3. Create DOM Elements for Response Card
+  function createResponseCard(resp: any): HTMLElement {
+    const card = document.createElement('div');
+    card.className = 'glass-container response-card';
+    card.id = `resp-${resp.id}`;
+
+    const date = new Date(resp.created_at);
+    const dateFormatted = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const isFiction = resp.category === 'fiction';
+    const categoryBadgeClass = isFiction ? 'fiction-badge' : 'personal-badge';
+
+    const hasName = resp.writer_name && resp.writer_name !== 'Anonymous';
+
+    card.innerHTML = `
+      <div class="response-header">
+        <div class="badge-row">
+          <span class="category-badge-p ${categoryBadgeClass}">${resp.category.toUpperCase()}</span>
+          <span class="date-badge">${dateFormatted}</span>
+        </div>
+      </div>
+      <blockquote class="response-prompt ${isFiction ? 'fiction-prompt-border' : 'personal-prompt-border'}">
+        ${resp.prompt_text}
+      </blockquote>
+      <p class="response-text">${resp.response_text}</p>
+      <div class="response-footer">
+        <div class="footer-toggles" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+          <div class="privacy-toggle">
+            <label class="toggle-container">
+              <input type="checkbox" class="toggle-privacy" data-id="${resp.id}" ${resp.is_public ? 'checked' : ''} />
+              <span class="toggle-checkmark"></span>
+              <span class="toggle-label">${resp.is_public ? 'Public' : 'Private'}</span>
+            </label>
+          </div>
+          <div class="name-toggle" style="display: ${resp.is_public ? 'flex' : 'none'}; align-items: center;">
+            <label class="toggle-container">
+              <input type="checkbox" class="toggle-name" data-id="${resp.id}" ${hasName ? 'checked' : ''} />
+              <span class="toggle-checkmark"></span>
+              <span class="toggle-label">Show Username</span>
+            </label>
+          </div>
+        </div>
+        <div class="footer-actions">
+          <button class="btn-action btn-copy" data-text="${encodeURIComponent(resp.response_text)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy
+          </button>
+          <button class="btn-action btn-delete" data-id="${resp.id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Bind event listeners
+    // Toggle Privacy
+    const toggle = card.querySelector('.toggle-privacy') as HTMLInputElement | null;
+    const label = card.querySelector('.toggle-label');
+    const nameToggleContainer = card.querySelector('.name-toggle') as HTMLElement | null;
+    const nameToggleInput = card.querySelector('.toggle-name') as HTMLInputElement | null;
+
+    toggle?.addEventListener('change', async () => {
+      const isPublic = toggle.checked;
+      if (label) label.textContent = isPublic ? 'Public' : 'Private';
+
+      // Update name toggle visibility in UI
+      if (nameToggleContainer) {
+        nameToggleContainer.style.display = isPublic ? 'flex' : 'none';
+      }
+
+      const updateData: any = { is_public: isPublic };
+      
+      // If setting to private, also reset the name toggle in UI and DB to Anonymous
+      if (!isPublic) {
+        if (nameToggleInput) nameToggleInput.checked = false;
+        updateData.writer_name = 'Anonymous';
+      }
+
+      try {
+        const { error } = await supabase
+          .from('responses')
+          .update(updateData)
+          .eq('id', resp.id);
+
+        if (error) throw error;
+        showToast(`Response set to ${isPublic ? 'Public' : 'Private'}`);
+      } catch (err: any) {
+        console.error('Error updating privacy:', err);
+        showToast('Failed to update visibility');
+        // Revert UI check
+        toggle.checked = !isPublic;
+        if (label) label.textContent = !isPublic ? 'Public' : 'Private';
+        if (nameToggleContainer) {
+          nameToggleContainer.style.display = !isPublic ? 'flex' : 'none';
+        }
+      }
+    });
+
+    // Toggle Username Attachment
+    nameToggleInput?.addEventListener('change', async () => {
+      const showName = nameToggleInput.checked;
+
+      // Retrieve current session username
+      const { data: { session } } = await supabase.auth.getSession();
+      const email = session?.user?.email || 'Anonymous Writer';
+      const displayName = session?.user?.user_metadata?.display_name;
+      const username = displayName || email.split('@')[0] || 'Anonymous Writer';
+
+      const writerName = showName ? username : 'Anonymous';
+
+      try {
+        const { error } = await supabase
+          .from('responses')
+          .update({ writer_name: writerName })
+          .eq('id', resp.id);
+
+        if (error) throw error;
+        showToast(`Username ${showName ? 'attached' : 'removed'}`);
+      } catch (err: any) {
+        console.error('Error updating username attachment:', err);
+        showToast('Failed to update name preference');
+        // Revert UI check
+        nameToggleInput.checked = !showName;
+      }
+    });
+
+    // Copy Response
+    const copyBtn = card.querySelector('.btn-copy');
+    copyBtn?.addEventListener('click', () => {
+      const text = decodeURIComponent(copyBtn.getAttribute('data-text') || '');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy response:', err);
+      });
+    });
+
+    // Delete Response
+    const deleteBtn = card.querySelector('.btn-delete');
+    deleteBtn?.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to delete this response? This action cannot be undone.')) {
+        return;
+      }
+
+      const id = deleteBtn.getAttribute('data-id');
+      try {
+        const { error } = await supabase
+          .from('responses')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Remove element from DOM
+        card.remove();
+        showToast('Response deleted');
+        
+        // Refresh statistics
+        const { data: remaining } = await supabase.from('responses').select('id, category');
+        updateStats(remaining || []);
+        
+        if (!remaining || remaining.length === 0) {
+          if (emptyState) emptyState.style.display = 'flex';
+        }
+
+      } catch (err: any) {
+        console.error('Error deleting response:', err);
+        showToast('Failed to delete response');
+      }
+    });
+
+    return card;
+  }
+
+  // Bind Auth Listeners
+  supabase.auth.onAuthStateChange((event, session) => {
+    activeSession = session;
+    checkAuth();
+  });
+
+  signinBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('open-auth-modal'));
+  });
+</script>

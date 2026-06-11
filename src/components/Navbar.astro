@@ -7,12 +7,20 @@
 
         <div class="nav-links">
             <a href="/" class="nav-link">Home</a>
+            <a href="/feed" class="nav-link">Feed</a>
             <a href="/prompt" class="nav-link">Prompts</a>
+            <a href="/profile" class="nav-link auth-only" style="display: none;">My Profile</a>
         </div>
 
         <div class="nav-cta">
-            <div class="magnet-wrapper">
+            <div class="guest-only text-signin-wrapper">
+                <button id="nav-signin-btn" class="btn-signin">Sign In</button>
+            </div>
+            <div class="magnet-wrapper guest-only">
                 <a href="/prompt" class="btn-cta">Start Writing</a>
+            </div>
+            <div class="magnet-wrapper auth-only" style="display: none;">
+                <button id="nav-signout-btn" class="btn-cta">Sign Out</button>
             </div>
         </div>
     </div>
@@ -105,7 +113,7 @@
         left: 0;
         width: 0;
         height: 2px;
-        background: linear-gradient(to right, var(--color-one), var(--color-two));
+        background: linear-gradient(to right, var(--color-blue), var(--color-red));
         transition: width 0.3s ease;
         border-radius: 2px;
     }
@@ -124,6 +132,26 @@
         position: relative;
     }
 
+    .text-signin-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-signin {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.3s ease;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-signin:hover {
+        color: #ffffff;
+    }
+
     /* CTA Button Styling */
     .btn-cta {
         display: inline-block;
@@ -140,6 +168,7 @@
         font-weight: 600;
         cursor: pointer;
         text-decoration: none;
+        text-align: center;
         
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         transform: translate(var(--mx, 0px), var(--my, 0px));
@@ -162,12 +191,57 @@
             gap: 1rem;
         }
         .btn-cta {
-            display: none;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        .btn-signin {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.85rem;
         }
     }
 </style>
 
 <script>
+    import { supabase } from '../lib/supabaseClient.js';
+
+    // 1. Auth Toggle UI Elements
+    const authOnlyElements = document.querySelectorAll('.auth-only') as NodeListOf<HTMLElement>;
+    const guestOnlyElements = document.querySelectorAll('.guest-only') as NodeListOf<HTMLElement>;
+    const signinBtn = document.getElementById('nav-signin-btn');
+    const signoutBtn = document.getElementById('nav-signout-btn');
+
+    function updateAuthUI(session: any) {
+        if (session) {
+            authOnlyElements.forEach(el => el.style.display = 'inline-block');
+            guestOnlyElements.forEach(el => el.style.display = 'none');
+        } else {
+            authOnlyElements.forEach(el => el.style.display = 'none');
+            guestOnlyElements.forEach(el => el.style.display = 'inline-block');
+        }
+    }
+
+    // Initial auth check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        updateAuthUI(session);
+    });
+
+    // Listen to Auth State Changes
+    supabase.auth.onAuthStateChange((event, session) => {
+        updateAuthUI(session);
+    });
+
+    // Button interactions
+    signinBtn?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('open-auth-modal'));
+    });
+
+    signoutBtn?.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        // Redirect to homepage on sign out
+        window.location.href = '/';
+    });
+
+    // 2. Magnet Effect
     const wrappers = document.querySelectorAll('.navbar .magnet-wrapper');
 
     wrappers.forEach((wrapper) => {
@@ -177,17 +251,14 @@
         wrapper.addEventListener('mousemove', (e) => {
             const mouseEvent = e as MouseEvent;
             const rect = wrapper.getBoundingClientRect();
-            // Calculate mouse coordinates relative to the center of the wrapper
             const x = mouseEvent.clientX - rect.left - rect.width / 2;
             const y = mouseEvent.clientY - rect.top - rect.height / 2;
             
-            // Adjust the multiplier (0.35) to increase or decrease the magnetism strength
             btn.style.setProperty('--mx', `${x * 0.35}px`);
             btn.style.setProperty('--my', `${y * 0.35}px`);
         });
 
         wrapper.addEventListener('mouseleave', () => {
-            // Reset position smoothly when mouse leaves the wrapper
             btn.style.setProperty('--mx', '0px');
             btn.style.setProperty('--my', '0px');
         });

@@ -1,0 +1,434 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Community Feed | Jernal">
+  <div id="feed-container">
+    
+    <!-- Feed Header -->
+    <div class="feed-header">
+      <h1 class="title-gradient">Community Feed</h1>
+      <p class="subtitle">Draw inspiration from stories and journal entries shared by the Jernal community.</p>
+    </div>
+
+    <!-- Feed Content -->
+    <div class="feed-content">
+      <div id="loading-feed" class="loading-state">
+        <span class="spinner"></span>
+        <p>Gathering stories from the community...</p>
+      </div>
+
+      <div id="empty-feed" class="empty-state" style="display: none;">
+        <p>No public stories have been shared yet. Be the first to share one!</p>
+        <a href="/prompt" class="btn-write">Write a Story</a>
+      </div>
+
+      <div id="feed-list" class="feed-list"></div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Copied to clipboard!</div>
+</Layout>
+
+<style is:global>
+  #feed-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 100px 1.5rem 40px 1.5rem; /* Space for navbar */
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .feed-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .title-gradient {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-red) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+
+  .subtitle {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .feed-content {
+    width: 100%;
+  }
+
+  .loading-state, .empty-state {
+    padding: 5rem 2rem;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+  }
+
+  .btn-write {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-red-dark);
+    background: linear-gradient(135deg, var(--color-red-dark) 0%, var(--color-red) 100%);
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(216, 30, 91, 0.25);
+  }
+
+  .btn-write:hover {
+    border-color: var(--color-red-light);
+    box-shadow: 0 0 20px rgba(216, 30, 91, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    align-items: center;
+  }
+
+  /* Feed Item Card Styling */
+  .feed-card {
+    border-color: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 2.25rem 2rem;
+    text-align: left;
+    transition: all 0.3s ease;
+  }
+
+  .feed-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      inset 0 1px 1px rgba(255, 255, 255, 0.15),
+      0 12px 40px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .feed-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 0.85rem;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-blue-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .author-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .category-badge-p {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    border: 1.5px solid transparent;
+  }
+
+  .fiction-badge {
+    color: var(--color-red-light);
+    background: rgba(216, 30, 91, 0.05);
+    border-color: rgba(216, 30, 91, 0.3);
+  }
+
+  .personal-badge {
+    color: var(--color-blue-light);
+    background: rgba(0, 207, 193, 0.05);
+    border-color: rgba(0, 207, 193, 0.3);
+  }
+
+  .date-badge {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+  }
+
+  .feed-prompt {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.5);
+    border-left: 2px solid rgba(255, 255, 255, 0.15);
+    padding-left: 0.75rem;
+    margin: 0;
+  }
+
+  .feed-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    white-space: pre-wrap;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .feed-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .btn-copy-feed {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0.45rem 1rem;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .btn-copy-feed:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--color-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    padding: 0.85rem 1.75rem;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    opacity: 0;
+  }
+
+  .toast.show {
+    bottom: 40px;
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    #container {
+      padding-top: 90px;
+    }
+    .feed-card {
+      padding: 1.5rem;
+      gap: 1rem;
+    }
+    .feed-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .badge-row {
+      width: 100%;
+      justify-content: space-between;
+    }
+    .btn-copy-feed {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  import { supabase } from '../lib/supabaseClient.js';
+
+  const loadingState = document.getElementById('loading-feed');
+  const emptyState = document.getElementById('empty-feed');
+  const feedList = document.getElementById('feed-list');
+  const toast = document.getElementById('toast');
+
+  function showToast(message: string) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  async function loadFeed() {
+    if (!feedList) return;
+    
+    if (loadingState) loadingState.style.display = 'flex';
+    if (emptyState) emptyState.style.display = 'none';
+    feedList.innerHTML = '';
+
+    try {
+      // Query public responses
+      const { data: responses, error } = await supabase
+        .from('responses')
+        .select('*')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .limit(50); // limit to latest 50 posts
+
+      if (error) throw error;
+
+      if (!responses || responses.length === 0) {
+        if (loadingState) loadingState.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'flex';
+        return;
+      }
+
+      if (loadingState) loadingState.style.display = 'none';
+
+      responses.forEach((resp: any) => {
+        const card = createFeedCard(resp);
+        feedList.appendChild(card);
+      });
+
+    } catch (err: any) {
+      console.error('Error loading community feed:', err);
+      feedList.innerHTML = `<div class="loading-state"><p class="text-error">Error loading feed: ${err.message || 'Unknown error'}</p></div>`;
+      if (loadingState) loadingState.style.display = 'none';
+    }
+  }
+
+  function createFeedCard(resp: any): HTMLElement {
+    const card = document.createElement('div');
+    card.className = 'glass-container feed-card';
+
+    const date = new Date(resp.created_at);
+    const dateFormatted = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    const isFiction = resp.category === 'fiction';
+    const categoryBadgeClass = isFiction ? 'fiction-badge' : 'personal-badge';
+    
+    // Display author name or Anonymous
+    const authorName = (resp.writer_name && resp.writer_name !== 'Anonymous') ? resp.writer_name : 'Anonymous Writer';
+    const authorInitials = authorName.substring(0, 2).toUpperCase();
+
+    card.innerHTML = `
+      <div class="feed-card-header">
+        <div class="author-info">
+          <span class="author-avatar">${authorInitials}</span>
+          <span class="author-name">${authorName}</span>
+        </div>
+        <div class="badge-row">
+          <span class="category-badge-p ${categoryBadgeClass}">${resp.category.toUpperCase()}</span>
+          <span class="date-badge">${dateFormatted}</span>
+        </div>
+      </div>
+      <blockquote class="feed-prompt">
+        ${resp.prompt_text}
+      </blockquote>
+      <p class="feed-text">${resp.response_text}</p>
+      <div class="feed-card-footer">
+        <button class="btn-copy-feed" data-text="${encodeURIComponent(resp.response_text)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copy Response
+        </button>
+      </div>
+    `;
+
+    // Copy Event listener
+    const copyBtn = card.querySelector('.btn-copy-feed');
+    copyBtn?.addEventListener('click', () => {
+      const text = decodeURIComponent(copyBtn.getAttribute('data-text') || '');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy response:', err);
+      });
+    });
+
+    return card;
+  }
+
+  // Load feed on start
+  loadFeed();
+</script>
