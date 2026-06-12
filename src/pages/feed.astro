@@ -321,7 +321,14 @@ import Layout from "../layouts/Layout.astro";
 </style>
 
 <script>
-  import { supabase } from '../lib/supabaseClient.js';
+  let supabaseInstance: any = null;
+  async function getSupabase() {
+    if (!supabaseInstance) {
+      const module = await import('../lib/supabaseClient.js');
+      supabaseInstance = module.supabase;
+    }
+    return supabaseInstance;
+  }
 
   const loadingState = document.getElementById('loading-feed');
   const emptyState = document.getElementById('empty-feed');
@@ -345,8 +352,9 @@ import Layout from "../layouts/Layout.astro";
     feedList.innerHTML = '';
 
     try {
+      const sb = await getSupabase();
       // Query public responses
-      const { data: responses, error } = await supabase
+      const { data: responses, error } = await sb
         .from('responses')
         .select('*')
         .eq('is_public', true)

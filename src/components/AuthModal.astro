@@ -287,7 +287,14 @@
 </style>
 
 <script>
-  import { supabase } from '../lib/supabaseClient.js';
+  let supabaseInstance: any = null;
+  async function getSupabase() {
+    if (!supabaseInstance) {
+      const module = await import('../lib/supabaseClient.js');
+      supabaseInstance = module.supabase;
+    }
+    return supabaseInstance;
+  }
 
   const modal = document.getElementById('auth-modal');
   const closeBtn = document.getElementById('close-auth-modal');
@@ -414,8 +421,9 @@
     if (submitBtnSpinner) submitBtnSpinner.style.display = 'inline-block';
 
     try {
+      const sb = await getSupabase();
       if (currentMode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await sb.auth.signUp({
           email,
           password,
           options: {
@@ -443,7 +451,7 @@
         }
       } else {
         // Sign In
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await sb.auth.signInWithPassword({
           email,
           password
         });

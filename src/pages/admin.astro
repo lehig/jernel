@@ -745,7 +745,14 @@ import Layout from "../layouts/Layout.astro";
 </style>
 
 <script>
-  import { supabase } from '../lib/supabaseClient.js';
+  let supabaseInstance: any = null;
+  async function getSupabase() {
+    if (!supabaseInstance) {
+      const module = await import('../lib/supabaseClient.js');
+      supabaseInstance = module.supabase;
+    }
+    return supabaseInstance;
+  }
 
   // 1. SELECT UI ELEMENTS
   const loadingPanel = document.getElementById('admin-loading');
@@ -835,8 +842,9 @@ import Layout from "../layouts/Layout.astro";
     if (!loadingPanel || !unauthorizedPanel || !dashboardPanel) return;
 
     try {
+      const sb = await getSupabase();
       // 1. Get current auth session
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       
       if (!session) {
         // Show unauthorized panel (request log in)
@@ -850,7 +858,7 @@ import Layout from "../layouts/Layout.astro";
       }
 
       // 2. Check if user ID is in public.admins
-      const { data: adminData, error } = await supabase
+      const { data: adminData, error } = await sb
         .from('admins')
         .select('email')
         .eq('id', session.user.id)
@@ -888,27 +896,34 @@ import Layout from "../layouts/Layout.astro";
   });
 
   signoutBtn?.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    const sb = await getSupabase();
+    await sb.auth.signOut();
     window.location.reload();
   });
 
-  // Re-verify when auth state changes (e.g. login succeeds)
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-      checkAdminStatus();
-    }
-  });
+  async function initAdmin() {
+    const sb = await getSupabase();
+    // Re-verify when auth state changes (e.g. login succeeds)
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        checkAdminStatus();
+      }
+    });
 
-  // Initial check on load
-  checkAdminStatus();
+    // Initial check on load
+    checkAdminStatus();
+  }
+
+  initAdmin();
 
   // 4. LOAD QUEUE & STATS DATA
   async function loadDashboardData() {
     try {
       const todayDenver = getDenverDateString();
+      const sb = await getSupabase();
 
       // Fetch all prompts
-      const { data: prompts, error } = await supabase
+      const { data: prompts, error } = await sb
         .from('prompts')
         .select('*')
         .order('scheduled_date', { ascending: true });
@@ -1065,9 +1080,10 @@ import Layout from "../layouts/Layout.astro";
 
     try {
       const todayDenver = getDenverDateString();
+      const sb = await getSupabase();
 
       // 1. Find the latest scheduled prompt for this category
-      const { data: latestPrompt, error: fetchError } = await supabase
+      const { data: latestPrompt, error: fetchError } = await sb
         .from('prompts')
         .select('scheduled_date')
         .eq('category', category)
@@ -1086,7 +1102,7 @@ import Layout from "../layouts/Layout.astro";
       }
 
       // 3. Insert prompt
-      const { error: insertError } = await supabase
+      const { error: insertError } = await sb
         .from('prompts')
         .insert({
           category,
@@ -1119,8 +1135,9 @@ import Layout from "../layouts/Layout.astro";
   // 7. DELETE & SHIFT LOGIC
   async function performDeleteAndShift(id: string, category: string, date: string) {
     try {
+      const sb = await getSupabase();
       // 1. Delete prompt
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await sb
         .from('prompts')
         .delete()
         .eq('id', id);
@@ -1128,7 +1145,7 @@ import Layout from "../layouts/Layout.astro";
       if (deleteError) throw deleteError;
 
       // 2. Fetch subsequent prompts for this category sorted ascending
-      const { data: subsequent, error: fetchError } = await supabase
+      const { data: subsequent, error: fetchError } = await sb
         .from('prompts')
         .select('id, scheduled_date')
         .eq('category', category)
@@ -1141,7 +1158,7 @@ import Layout from "../layouts/Layout.astro";
       if (subsequent && subsequent.length > 0) {
         for (const prompt of subsequent) {
           const newDate = addDays(prompt.scheduled_date, -1);
-          const { error: updateError } = await supabase
+          const { error: updateError } = await sb
             .from('prompts')
             .update({ scheduled_date: newDate })
             .eq('id', prompt.id);

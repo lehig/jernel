@@ -592,7 +592,14 @@ import Layout from "../layouts/Layout.astro";
 </style>
 
 <script>
-  import { supabase } from '../lib/supabaseClient.js';
+  let supabaseInstance: any = null;
+  async function getSupabase() {
+    if (!supabaseInstance) {
+      const module = await import('../lib/supabaseClient.js');
+      supabaseInstance = module.supabase;
+    }
+    return supabaseInstance;
+  }
 
   const guestState = document.getElementById('unauthorized-state');
   const userState = document.getElementById('authorized-state');
@@ -625,7 +632,8 @@ import Layout from "../layouts/Layout.astro";
 
   // 1. Initial State Check
   async function checkAuth() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const sb = await getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
     activeSession = session;
     
     if (session) {
@@ -658,7 +666,8 @@ import Layout from "../layouts/Layout.astro";
     if (emptyState) emptyState.style.display = 'none';
 
     try {
-      const { data: responses, error } = await supabase
+      const sb = await getSupabase();
+      const { data: responses, error } = await sb
         .from('responses')
         .select('*')
         .order('created_at', { ascending: false });
@@ -784,7 +793,8 @@ import Layout from "../layouts/Layout.astro";
       }
 
       try {
-        const { error } = await supabase
+        const sb = await getSupabase();
+        const { error } = await sb
           .from('responses')
           .update(updateData)
           .eq('id', resp.id);
@@ -808,7 +818,8 @@ import Layout from "../layouts/Layout.astro";
       const showName = nameToggleInput.checked;
 
       // Retrieve current session username
-      const { data: { session } } = await supabase.auth.getSession();
+      const sb = await getSupabase();
+      const { data: { session } } = await sb.auth.getSession();
       const email = session?.user?.email || 'Anonymous Writer';
       const displayName = session?.user?.user_metadata?.display_name;
       const username = displayName || email.split('@')[0] || 'Anonymous Writer';
@@ -816,7 +827,7 @@ import Layout from "../layouts/Layout.astro";
       const writerName = showName ? username : 'Anonymous';
 
       try {
-        const { error } = await supabase
+        const { error } = await sb
           .from('responses')
           .update({ writer_name: writerName })
           .eq('id', resp.id);
@@ -851,7 +862,8 @@ import Layout from "../layouts/Layout.astro";
 
       const id = deleteBtn.getAttribute('data-id');
       try {
-        const { error } = await supabase
+        const sb = await getSupabase();
+        const { error } = await sb
           .from('responses')
           .delete()
           .eq('id', id);
@@ -863,7 +875,7 @@ import Layout from "../layouts/Layout.astro";
         showToast('Response deleted');
         
         // Refresh statistics
-        const { data: remaining } = await supabase.from('responses').select('id, category');
+        const { data: remaining } = await sb.from('responses').select('id, category');
         updateStats(remaining || []);
         
         if (!remaining || remaining.length === 0) {
@@ -879,11 +891,18 @@ import Layout from "../layouts/Layout.astro";
     return card;
   }
 
-  // Bind Auth Listeners
-  supabase.auth.onAuthStateChange((event, session) => {
-    activeSession = session;
-    checkAuth();
-  });
+  async function initProfile() {
+    const sb = await getSupabase();
+    await checkAuth();
+
+    // Bind Auth Listeners
+    sb.auth.onAuthStateChange((event, session) => {
+      activeSession = session;
+      checkAuth();
+    });
+  }
+
+  initProfile();
 
   signinBtn?.addEventListener('click', () => {
     window.dispatchEvent(new CustomEvent('open-auth-modal'));

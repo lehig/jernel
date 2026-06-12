@@ -44,36 +44,16 @@ const {
 			<span class="dot" style="--i:12; --left:21%; --size:8px; --delay:-15s; --color:#ec4899;"></span>
 			<span class="dot" style="--i:22; --left:29%; --size:5px; --delay:-4s; --color:#3b82f6;"></span>
 			<span class="dot" style="--i:14; --left:37%; --size:16px; --delay:-11s; --color:#a855f7; --blur:3px; --opacity:0.3;"></span>
-			<span class="dot" style="--i:17; --left:44%; --size:7px; --delay:-9s; --color:#06b6d4;"></span>
 			<span class="dot" style="--i:25; --left:52%; --size:10px; --delay:-18s; --color:#ffffff;"></span>
 			<span class="dot" style="--i:11; --left:59%; --size:12px; --delay:-1s; --color:#ec4899; --blur:1px; --opacity:0.4;"></span>
 			<span class="dot" style="--i:18; --left:67%; --size:6px; --delay:-23s; --color:#3b82f6;"></span>
 			<span class="dot" style="--i:15; --left:74%; --size:15px; --delay:-5s; --color:#a855f7; --blur:2px; --opacity:0.35;"></span>
 			<span class="dot" style="--i:20; --left:82%; --size:8px; --delay:-13s; --color:#06b6d4;"></span>
 			<span class="dot" style="--i:13; --left:91%; --size:5px; --delay:-20s; --color:#ffffff;"></span>
-			<span class="dot" style="--i:16; --left:96%; --size:10px; --delay:-8s; --color:#3b82f6;"></span>
-			<span class="dot" style="--i:24; --left:7%; --size:10px; --delay:-10s; --color:#ffffff;"></span>
 			<span class="dot" style="--i:18; --left:18%; --size:5px; --delay:-3s; --color:#ec4899;"></span>
-			<span class="dot" style="--i:14; --left:26%; --size:18px; --delay:-14s; --color:#3b82f6; --blur:4px; --opacity:0.25;"></span>
 			<span class="dot" style="--i:21; --left:33%; --size:7px; --delay:-21s; --color:#a855f7;"></span>
-			<span class="dot" style="--i:15; --left:41%; --size:11px; --delay:-6s; --color:#06b6d4;"></span>
-			<span class="dot" style="--i:27; --left:49%; --size:4px; --delay:-12s; --color:#ffffff;"></span>
 			<span class="dot" style="--i:12; --left:56%; --size:13px; --delay:-19s; --color:#ec4899; --blur:2px; --opacity:0.35;"></span>
-			<span class="dot" style="--i:19; --left:63%; --size:9px; --delay:-25s; --color:#3b82f6;"></span>
-			<span class="dot" style="--i:16; --left:70%; --size:6px; --delay:-4s; --color:#a855f7;"></span>
 			<span class="dot" style="--i:23; --left:78%; --size:15px; --delay:-16s; --color:#06b6d4; --blur:3px; --opacity:0.3;"></span>
-			<span class="dot" style="--i:11; --left:86%; --size:8px; --delay:-9s; --color:#ffffff;"></span>
-			<span class="dot" style="--i:17; --left:93%; --size:12px; --delay:-22s; --color:#ec4899;"></span>
-			<span class="dot" style="--i:20; --left:3%; --size:11px; --delay:-17s; --color:#06b6d4;"></span>
-			<span class="dot" style="--i:13; --left:15%; --size:7px; --delay:-1s; --color:#ffffff;"></span>
-			<span class="dot" style="--i:26; --left:22%; --size:14px; --delay:-11s; --color:#a855f7; --blur:2px; --opacity:0.35;"></span>
-			<span class="dot" style="--i:15; --left:38%; --size:6px; --delay:-24s; --color:#ec4899;"></span>
-			<span class="dot" style="--i:22; --left:47%; --size:9px; --delay:-8s; --color:#3b82f6;"></span>
-			<span class="dot" style="--i:18; --left:54%; --size:16px; --delay:-15s; --color:#06b6d4; --blur:3px; --opacity:0.3;"></span>
-			<span class="dot" style="--i:28; --left:66%; --size:5px; --delay:-5s; --color:#ffffff;"></span>
-			<span class="dot" style="--i:14; --left:75%; --size:12px; --delay:-20s; --color:#a855f7;"></span>
-			<span class="dot" style="--i:21; --left:84%; --size:7px; --delay:-12s; --color:#ec4899;"></span>
-			<span class="dot" style="--i:17; --left:90%; --size:15px; --delay:-2s; --color:#3b82f6; --blur:3px; --opacity:0.3;"></span>
 		</div>
 
 		<slot />
@@ -99,6 +79,7 @@ const {
         opacity: 0.35;
         mix-blend-mode: screen;
         animation: drift 25s ease-in-out infinite alternate;
+        will-change: transform;
     }
 
     .orb-1 {
@@ -168,6 +149,7 @@ const {
         opacity: var(--opacity, 0.55);
         pointer-events: none;
         box-shadow: 0 0 10px var(--color, rgba(255, 255, 255, 0.8));
+        will-change: transform;
     }
 
     @keyframes floatUp {

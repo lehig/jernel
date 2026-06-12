@@ -203,7 +203,14 @@
 </style>
 
 <script>
-    import { supabase } from '../lib/supabaseClient.js';
+    let supabaseInstance: any = null;
+    async function getSupabase() {
+        if (!supabaseInstance) {
+            const module = await import('../lib/supabaseClient.js');
+            supabaseInstance = module.supabase;
+        }
+        return supabaseInstance;
+    }
 
     // 1. Auth Toggle UI Elements
     const authOnlyElements = document.querySelectorAll('.auth-only') as NodeListOf<HTMLElement>;
@@ -218,7 +225,8 @@
             return;
         }
         try {
-            const { data, error } = await supabase
+            const sb = await getSupabase();
+            const { data, error } = await sb
                 .from('admins')
                 .select('id')
                 .eq('id', session.user.id)
@@ -247,25 +255,31 @@
         }
     }
 
-    // Initial auth check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function initAuth() {
+        const sb = await getSupabase();
+        
+        // Initial auth check
+        const { data: { session } } = await sb.auth.getSession();
         updateAuthUI(session);
-    });
 
-    // Listen to Auth State Changes
-    supabase.auth.onAuthStateChange((event, session) => {
-        updateAuthUI(session);
-    });
+        // Listen to Auth State Changes
+        sb.auth.onAuthStateChange((event, session) => {
+            updateAuthUI(session);
+        });
+
+        // Sign out interaction
+        signoutBtn?.addEventListener('click', async () => {
+            await sb.auth.signOut();
+            window.location.href = '/';
+        });
+    }
+
+    // Run auth initialization asynchronously
+    initAuth();
 
     // Button interactions
     signinBtn?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('open-auth-modal'));
-    });
-
-    signoutBtn?.addEventListener('click', async () => {
-        await supabase.auth.signOut();
-        // Redirect to homepage on sign out
-        window.location.href = '/';
     });
 
     // 2. Magnet Effect

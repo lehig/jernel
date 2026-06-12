@@ -456,7 +456,14 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
 </style>
 
 <script>
-  import { supabase } from '../../lib/supabaseClient.js';
+  let supabaseInstance: any = null;
+  async function getSupabase() {
+    if (!supabaseInstance) {
+      const module = await import('../../lib/supabaseClient.js');
+      supabaseInstance = module.supabase;
+    }
+    return supabaseInstance;
+  }
 
   // 1. READ DATA & SELECT TODAY'S DETERMINISTIC PROMPT
   const container = document.getElementById('container');
@@ -516,7 +523,8 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     // 2. Fetch from Supabase
     let activePrompt = "";
     try {
-      const { data, error } = await supabase
+      const sb = await getSupabase();
+      const { data, error } = await sb
         .from('prompts')
         .select('prompt_text')
         .eq('category', category)
@@ -632,7 +640,8 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
       return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const sb = await getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
     
     // If not logged in, trigger auth modal
     if (!session) {
@@ -657,7 +666,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
       const isPublic = publicCheckbox?.checked || false;
       const promptText = promptEl.textContent || '';
 
-      const { error } = await supabase.from('responses').insert({
+      const { error } = await sb.from('responses').insert({
         category,
         prompt_text: promptText,
         response_text: responseText,
