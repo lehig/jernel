@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # sql
 *.sql
+
+# misc files
+misc_files/

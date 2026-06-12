@@ -12,10 +12,13 @@ export function getStaticPaths() {
 const { category } = Astro.params;
 const categoryPrompts = prompts[category] || [];
 const title = category === "fiction" ? "Fiction Prompt | Jernal" : "Personal Prompt | Jernal";
+const description = category === "fiction" 
+  ? "Today's fiction writing prompt on Jernal. Challenge your creative writing skills and draft your story."
+  : "Today's personal journal prompt on Jernal. Reflect on your experiences and write your personal entry.";
 const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
 ---
 
-<Layout title={title}>
+<Layout title={title} description={description}>
   <div id="container" class={themeClass} data-prompts={JSON.stringify(categoryPrompts)} data-category={category}>
     <div class="glass-container workspace-card">
       <div class="workspace-header">
