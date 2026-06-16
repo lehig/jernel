@@ -1,0 +1,219 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Privacy Policy | Jernal" description="Read the Privacy Policy for Jernal daily writing prompt platform.">
+  <div id="privacy-container">
+    <div class="glass-container privacy-card">
+      <h1 class="privacy-title">Privacy Policy</h1>
+      <p class="privacy-tagline">Last updated: June 15, 2026</p>
+      
+      <hr class="divider" />
+      
+      <section class="privacy-section-doc">
+        <h2>1. Introduction</h2>
+        <p>
+          At Jernal, we value your privacy and are committed to protecting your personal data. This Privacy Policy outlines the types of information we collect, how we use it, and the choices you have regarding your content and profile.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>2. Information We Collect</h2>
+        <p>
+          <strong>Account Data:</strong> If you choose to create an account, we collect your email address and username (if provided) to manage authentication and user preferences.
+        </p>
+        <p>
+          <strong>User Content:</strong> We store the responses you write and save to your profile. If you use Jernal without an account or don't save your work, your responses are only stored in your browser's temporary session storage and are not transmitted to our servers.
+        </p>
+        <p>
+          <strong>Technical Data:</strong> We may collect anonymized browser technical data, cookies, and local session tokens used to keep you signed in or to save drafts temporarily.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>3. How We Use Your Information</h2>
+        <p>
+          We use the information we collect to:
+        </p>
+        <p>
+          - Provide, maintain, and secure the Jernal writing platform.<br />
+          - Authenticate your identity and enable you to save your writings to your profile page.<br />
+          - Publish stories to the community feed if you explicitly select the "Make this response public" option.<br />
+          - Moderate feed content to prevent spam, abuse, and terms violations.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>4. Data Sharing and Disclosure</h2>
+        <p>
+          We do not sell, trade, or rent your personal information to third parties. 
+        </p>
+        <p>
+          If you check the box to share a prompt response publicly, it will be visible to all visitors on the Community Feed. Public responses will display with the username associated with your account or as "Anonymous Writer" depending on your preference.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>5. Storage, Security, and Third Parties</h2>
+        <p>
+          Our authentication and databases are hosted securely by Supabase. Your password is never accessible to us in plaintext. While we strive to protect your data, no method of electronic storage or transmission is 100% secure.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>6. Your Controls and Rights</h2>
+        <p>
+          You have full control over your content on Jernal:
+        </p>
+        <p>
+          - You can delete any saved prompt responses from your profile page at any time.<br />
+          - You can toggle the privacy setting of any response in your profile to make it private or public.<br />
+          - You can contact us to request the complete deletion of your account and associated data.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>7. Cookies and Browser Cache</h2>
+        <p>
+          We use session cookies and local storage tokens to maintain your login session and to save writing drafts. You can disable cookies in your browser settings, but some features (such as signing in) may not function correctly.
+        </p>
+      </section>
+
+      <section class="privacy-section-doc">
+        <h2>8. Contact Us</h2>
+        <p>
+          If you have any questions about this Privacy Policy or would like to request account deletion, please email us at <a href="mailto:lehigraciaiii@gmail.com" class="privacy-link">lehigraciaiii@gmail.com</a>.
+        </p>
+      </section>
+
+      <div class="privacy-footer-actions">
+        <a href="/" class="btn-back">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  #privacy-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 1.5rem 40px 1.5rem; /* Space for navbar */
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .privacy-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    max-width: 800px !important;
+  }
+
+  .privacy-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-red) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  .privacy-tagline {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: -1rem 0 0 0;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .divider {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 0;
+  }
+
+  .privacy-section-doc {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .privacy-section-doc h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+    color: #ffffff;
+    border-left: 4px solid var(--color-blue);
+    padding-left: 0.75rem;
+    text-align: left;
+  }
+
+  .privacy-section-doc p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    text-align: left;
+  }
+
+  .privacy-section-doc p:last-child {
+    margin-bottom: 0;
+  }
+
+  .privacy-link {
+    color: var(--color-blue-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .privacy-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  .privacy-footer-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .btn-back {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-red);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-red-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-back:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: var(--color-red-light);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    #privacy-container {
+      align-items: flex-start;
+      padding-top: 110px;
+    }
+    .privacy-card {
+      padding: 1.5rem 1.25rem;
+      gap: 1.5rem;
+    }
+  }
+</style>

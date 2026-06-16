@@ -1,0 +1,211 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Terms of Service | Jernal" description="Read the Terms of Service for Jernal daily writing prompt platform.">
+  <div id="terms-container">
+    <div class="glass-container terms-card">
+      <h1 class="terms-title">Terms of Service</h1>
+      <p class="terms-tagline">Last updated: June 15, 2026</p>
+      
+      <hr class="divider" />
+      
+      <section class="terms-section">
+        <h2>1. Agreement to Terms</h2>
+        <p>
+          Welcome to Jernal. By accessing or using our website, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the website or services.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>2. Use of the Service</h2>
+        <p>
+          Jernal is a platform designed to provide daily writing prompts and a space for users to draft, save, and share their responses. You may use the site for personal, non-commercial writing practice.
+        </p>
+        <p>
+          You must be at least 13 years of age to register for an account and use the interactive features of Jernal.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>3. User-Generated Content & Privacy Choice</h2>
+        <p>
+          You retain all ownership rights to the stories and text responses you write on Jernal. 
+        </p>
+        <p>
+          By selecting the option to make a response public on the community feed, you grant Jernal a worldwide, non-exclusive, royalty-free license to display, distribute, and share your content on our platform for other users to read.
+        </p>
+        <p>
+          You agree not to post any content that is abusive, harassing, defamatory, vulgar, obscene, invasive of privacy, or otherwise offensive. We reserve the right to hide, remove, or delete any user-generated content from the community feed at our sole discretion.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>4. Accounts and Moderation</h2>
+        <p>
+          To save your writing history, you may create an account. You are responsible for keeping your login credentials secure.
+        </p>
+        <p>
+          We employ moderation systems to ensure the community remains safe and creative. We reserve the right to suspend posting privileges or terminate accounts for users who repeatedly violate community guidelines or post spam.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>5. Disclaimer of Warranties</h2>
+        <p>
+          The service is provided on an "as is" and "as available" basis. Jernal makes no warranties, expressed or implied, regarding the reliability, uptime, accuracy, or completeness of the service or the writing prompts provided.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>6. Limitation of Liability</h2>
+        <p>
+          To the maximum extent permitted by law, Jernal and its creator shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of writing data, arising out of your access to or use of the service.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>7. Changes to Terms</h2>
+        <p>
+          We may update these terms from time to time. If we make material changes, we will update the date at the top of this page. Your continued use of Jernal after changes are posted constitutes acceptance of the new terms.
+        </p>
+      </section>
+
+      <section class="terms-section">
+        <h2>8. Contact Information</h2>
+        <p>
+          If you have any questions or feedback about these terms, please contact us at <a href="mailto:lehigraciaiii@gmail.com" class="terms-link">lehigraciaiii@gmail.com</a>.
+        </p>
+      </section>
+
+      <div class="terms-footer-actions">
+        <a href="/" class="btn-back">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  #terms-container {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 1.5rem 40px 1.5rem; /* Space for navbar */
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .terms-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    max-width: 800px !important;
+  }
+
+  .terms-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-red) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  .terms-tagline {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: -1rem 0 0 0;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .divider {
+    border: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 0;
+  }
+
+  .terms-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .terms-section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+    color: #ffffff;
+    border-left: 4px solid var(--color-blue);
+    padding-left: 0.75rem;
+    text-align: left;
+  }
+
+  .terms-section p {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    text-align: left;
+  }
+
+  .terms-section p:last-child {
+    margin-bottom: 0;
+  }
+
+  .terms-link {
+    color: var(--color-blue-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .terms-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  .terms-footer-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .btn-back {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-red);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--color-red-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-back:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: var(--color-red-light);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 640px) {
+    #terms-container {
+      align-items: flex-start;
+      padding-top: 110px;
+    }
+    .terms-card {
+      padding: 1.5rem 1.25rem;
+      gap: 1.5rem;
+    }
+  }
+</style>

@@ -15,12 +15,13 @@
 }
 
 #container {
-    height: 100%;
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 1rem;
+    padding: 90px 1.5rem 2rem 1.5rem;
+    width: 100%;
 }
 
 * {
@@ -96,8 +97,6 @@ p {
     #container {
         align-items: flex-start !important;
         padding-top: 110px !important; /* Safely push below fixed 70px navbar */
-        padding-bottom: 2rem !important;
-        height: auto !important;
-        min-height: 100vh !important;
+        padding-bottom: 3rem !important;
     }
 }
