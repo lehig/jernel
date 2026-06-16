@@ -12,7 +12,7 @@ import "../styles/global.css";
 
             <ul>
                 <li>
-                    Each day has a two prompts: one fiction and one personal.
+                    Each day has two prompts: one fiction and one personal.
                 </li>
                 <li>
                     You can pick which prompt to respond to (or respond to both,
@@ -59,8 +59,8 @@ import "../styles/global.css";
         font-weight: bold;
         background: linear-gradient(
             135deg,
-            var(--color-blue-light) 0%,
-            var(--color-blue) 100%
+            var(--color-red) 0%,
+            var(--color-red-light) 100%
         );
         background-clip: text;
         -webkit-background-clip: text;
@@ -71,11 +71,11 @@ import "../styles/global.css";
         display: inline-block;
         padding: 0.5rem 1.2rem;
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--color-red-dark);
         background: linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.08) 0%,
-            rgba(255, 255, 255, 0.02) 100%
+            var(--color-cream-dark) 0%,
+            var(--color-cream) 100%
         );
         color: var(--color-red-dark);
         font-size: 0.9rem;
@@ -87,16 +87,21 @@ import "../styles/global.css";
             inset 0 1px 1px rgba(255, 255, 255, 0.15),
             0 10px 30px rgba(0, 0, 0, 0.5);
         transform: translate(var(--mx, 0px), var(--my, 0px));
-        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         will-change: transform;
     }
 
     .btn-cta-landing:hover {
-        border-color: var(--color-red);
-
+        border-color: var(--color-red-light);
+        background: linear-gradient(
+            135deg,
+            var(--color-cream) 0%,
+            var(--color-cream-light) 100%
+        );
+        color: var(--color-red);
         box-shadow:
-            0 0 15px var(--color-red-dark),
-            0 4px 15px var(--color-red);
+            0 0 15px rgba(216, 30, 91, 0.3),
+            0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     ul {

@@ -55,8 +55,14 @@ import Layout from "../layouts/Layout.astro";
         </div>
       </div>
 
-      <!-- Dashboard Body -->
-      <div class="dashboard-layout">
+      <!-- Tab Selection Bar -->
+      <div class="filter-tabs" style="display: inline-flex; margin-bottom: 2rem; padding: 4px; border-radius: 16px;">
+        <button id="btn-tab-queue" class="filter-tab active" style="font-size: 0.95rem; padding: 0.5rem 1.5rem; border-radius: 12px; font-weight: 700;">Prompts Queue</button>
+        <button id="btn-tab-moderate" class="filter-tab" style="font-size: 0.95rem; padding: 0.5rem 1.5rem; border-radius: 12px; font-weight: 700;">Moderate Feed</button>
+      </div>
+
+      <!-- Tab Content 1: Prompts Queue -->
+      <div id="tab-content-queue" class="dashboard-layout">
         
         <!-- Column 1: Add Prompt Form -->
         <div class="form-panel glass-container">
@@ -118,6 +124,29 @@ import Layout from "../layouts/Layout.astro";
           </div>
         </div>
 
+      </div>
+
+      <!-- Tab Content 2: Moderate Feed -->
+      <div id="tab-content-moderate" style="display: none;">
+        <div class="dashboard-layout">
+          <!-- Column 1: Recent Community Posts -->
+          <div class="queue-panel glass-container">
+            <h2 class="section-title">Recent Community Feed Posts</h2>
+            <div id="mod-posts-list" class="queue-list" style="max-height: 600px; overflow-y: auto;">
+              <!-- Dynamically populated -->
+              <div class="empty-state">Loading feed posts...</div>
+            </div>
+          </div>
+
+          <!-- Column 2: Suspended Writers -->
+          <div class="form-panel glass-container" style="max-height: 680px; display: flex; flex-direction: column;">
+            <h2 class="section-title">Suspended Community Feed Writers</h2>
+            <div id="mod-blocked-list" class="queue-list" style="max-height: 600px; overflow-y: auto;">
+              <!-- Dynamically populated -->
+              <div class="empty-state">Loading suspended list...</div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -585,7 +614,8 @@ import Layout from "../layouts/Layout.astro";
 
   @media (max-width: 640px) {
     #admin-container {
-      padding-top: 90px;
+      align-items: flex-start;
+      padding-top: 110px;
     }
     .dashboard-header {
       flex-direction: column;
@@ -778,6 +808,14 @@ import Layout from "../layouts/Layout.astro";
   const queueListEl = document.getElementById('queue-list');
   const toastEl = document.getElementById('admin-toast');
 
+  // Moderation Tab selectors
+  const btnTabQueue = document.getElementById('btn-tab-queue');
+  const btnTabModerate = document.getElementById('btn-tab-moderate');
+  const tabContentQueue = document.getElementById('tab-content-queue');
+  const tabContentModerate = document.getElementById('tab-content-moderate');
+  const modPostsList = document.getElementById('mod-posts-list');
+  const modBlockedList = document.getElementById('mod-blocked-list');
+
   let activeFilter = 'all';
   let activeTimeFilter = 'upcoming';
   let cachedPrompts: any[] = [];
@@ -882,6 +920,7 @@ import Layout from "../layouts/Layout.astro";
 
       // Load dashboard data
       loadDashboardData();
+      loadModerationData();
 
     } catch (err) {
       console.error('Error verifying admin status:', err);
@@ -1125,7 +1164,7 @@ import Layout from "../layouts/Layout.astro";
 
     } catch (err: any) {
       console.error('Error queueing prompt:', err);
-      alert(`Failed to queue prompt: ${err.message || 'Unknown error'}`);
+      showToast(`Failed to queue prompt: ${err.message || 'Unknown error'}`);
     } finally {
       submitPromptBtn.disabled = false;
       submitPromptBtn.textContent = originalText;
@@ -1177,7 +1216,7 @@ import Layout from "../layouts/Layout.astro";
 
     } catch (err: any) {
       console.error('Error during deletion and queue shift:', err);
-      alert(`Delete and shift failed: ${err.message || 'Unknown error'}`);
+      showToast(`Delete and shift failed: ${err.message || 'Unknown error'}`);
       loadDashboardData(); // Reload to sync UI
     }
   }
@@ -1206,4 +1245,210 @@ import Layout from "../layouts/Layout.astro";
       renderQueue(todayDenver);
     });
   });
+
+  // 9. ADMIN TAB NAVIGATION
+  btnTabQueue?.addEventListener('click', () => {
+    btnTabQueue.classList.add('active');
+    btnTabModerate?.classList.remove('active');
+    if (tabContentQueue) tabContentQueue.style.display = 'grid';
+    if (tabContentModerate) tabContentModerate.style.display = 'none';
+  });
+
+  btnTabModerate?.addEventListener('click', () => {
+    btnTabModerate.classList.add('active');
+    btnTabQueue?.classList.remove('active');
+    if (tabContentQueue) tabContentQueue.style.display = 'none';
+    if (tabContentModerate) tabContentModerate.style.display = 'block';
+    loadModerationData();
+  });
+
+  // 10. MODERATION LOGIC & RENDERING
+  async function loadModerationData() {
+    if (!modPostsList || !modBlockedList) return;
+
+    try {
+      const sb = await getSupabase();
+
+      // 1. Fetch recent responses
+      const { data: posts, error: postsError } = await sb
+        .from('responses')
+        .select('*')
+        .eq('is_public', true)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (postsError) throw postsError;
+
+      // 2. Fetch suspended users
+      const { data: blocked, error: blockedError } = await sb
+        .rpc('get_blocked_users_admin');
+
+      if (blockedError) throw blockedError;
+
+      renderModerationPosts(posts || []);
+      renderModerationBlocked(blocked || []);
+
+    } catch (err: any) {
+      console.error('Error loading moderation data:', err);
+      showToast(`Moderation load failed: ${err.message || 'Unknown'}`);
+    }
+  }
+
+  function renderModerationPosts(posts: any[]) {
+    if (!modPostsList) return;
+    modPostsList.innerHTML = '';
+
+    if (posts.length === 0) {
+      modPostsList.innerHTML = '<div class="empty-state">No public community posts found.</div>';
+      return;
+    }
+
+    posts.forEach((post) => {
+      const isHidden = post.hidden_by_admin === true;
+      const card = document.createElement('div');
+      card.className = 'queue-item';
+      if (isHidden) {
+        card.style.opacity = '0.65';
+        card.style.borderColor = 'rgba(216, 30, 91, 0.3)';
+        card.style.background = 'rgba(216, 30, 91, 0.02)';
+      }
+
+      const date = new Date(post.created_at);
+      const dateFormatted = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+
+      card.innerHTML = `
+        <div class="queue-item-meta" style="margin-bottom: 0.5rem;">
+          <div class="queue-tags">
+            <span class="badge-category ${post.category}">${post.category.toUpperCase()}</span>
+            ${isHidden ? '<span class="badge-category fiction" style="background: rgba(216, 30, 91, 0.15); color: var(--color-red-light); border: 1.5px solid rgba(216, 30, 91, 0.3); font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 6px;">HIDDEN</span>' : ''}
+          </div>
+          <span class="badge-date">${dateFormatted}</span>
+        </div>
+        <p class="queue-item-text" style="font-weight: 700; margin: 0 0 0.5rem 0; font-size: 0.9rem; color: rgba(255,255,255,0.85);">Author: ${post.writer_name || 'Anonymous Writer'}</p>
+        <p class="queue-item-text" style="font-family: 'Times New Roman', serif; font-size: 1.05rem; padding: 0.85rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 0.75rem; white-space: pre-wrap; line-height: 1.5;">${post.response_text}</p>
+        <div class="queue-item-actions" style="display: flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 0.5rem;">
+          <button class="btn-delete btn-mod-toggle-hide" data-id="${post.id}" data-hidden="${isHidden}" style="color: ${isHidden ? 'var(--color-blue-light)' : 'var(--color-red-light)'};">
+            ${isHidden ? 'Unhide Post' : 'Hide Post'}
+          </button>
+          <button class="btn-delete btn-mod-toggle-block" data-user-id="${post.user_id}" data-username="${post.writer_name || 'Anonymous Writer'}" style="color: var(--color-red-light);">
+            Suspend Writer
+          </button>
+        </div>
+      `;
+
+      // Hide/Unhide handler
+      const hideBtn = card.querySelector('.btn-mod-toggle-hide') as HTMLButtonElement | null;
+      hideBtn?.addEventListener('click', async () => {
+        hideBtn.disabled = true;
+        try {
+          const sb = await getSupabase();
+          const { error } = await sb
+            .from('responses')
+            .update({ hidden_by_admin: !isHidden })
+            .eq('id', post.id);
+
+          if (error) throw error;
+          showToast(isHidden ? 'Post restored to feed.' : 'Post hidden from feed.');
+          loadModerationData();
+        } catch (err: any) {
+          console.error(err);
+          showToast(`Action failed: ${err.message}`);
+          hideBtn.disabled = false;
+        }
+      });
+
+      // Block handler
+      const blockBtn = card.querySelector('.btn-mod-toggle-block') as HTMLButtonElement | null;
+      blockBtn?.addEventListener('click', async () => {
+        const username = post.writer_name || 'Anonymous Writer';
+        if (!confirm(`Are you sure you want to suspend user "${username}" from posting to the community feed? All their current posts will also be hidden.`)) return;
+        blockBtn.disabled = true;
+
+        try {
+          const sb = await getSupabase();
+          const { error } = await sb
+            .from('blocked_users')
+            .insert({ id: post.user_id, username: username });
+
+          if (error) throw error;
+          showToast('Writer suspended successfully.');
+          loadModerationData();
+        } catch (err: any) {
+          console.error(err);
+          showToast(`Action failed: ${err.message}`);
+          blockBtn.disabled = false;
+        }
+      });
+
+      modPostsList.appendChild(card);
+    });
+  }
+
+  function renderModerationBlocked(blocked: any[]) {
+    if (!modBlockedList) return;
+    modBlockedList.innerHTML = '';
+
+    if (blocked.length === 0) {
+      modBlockedList.innerHTML = '<div class="empty-state">No suspended writers.</div>';
+      return;
+    }
+
+    blocked.forEach((user) => {
+      const card = document.createElement('div');
+      card.className = 'queue-item';
+      card.style.borderLeft = '3px solid var(--color-red-light)';
+      card.style.background = 'rgba(216, 30, 91, 0.02)';
+
+      const date = new Date(user.blocked_at);
+      const dateFormatted = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+
+      card.innerHTML = `
+        <div class="queue-item-meta" style="margin-bottom: 0.5rem;">
+          <span class="badge-category fiction" style="background: rgba(216, 30, 91, 0.15); color: var(--color-red-light); border: 1.5px solid rgba(216, 30, 91, 0.3); font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 6px;">SUSPENDED</span>
+          <span class="badge-date">${dateFormatted}</span>
+        </div>
+        <p class="queue-item-text" style="font-weight: 700; margin: 0; font-size: 0.95rem;">${user.username || 'Anonymous Writer'}</p>
+        <p class="queue-item-text" style="font-size: 0.8rem; color: rgba(255,255,255,0.55); margin: 0.15rem 0 0.5rem 0; word-break: break-all;">${user.email || 'No email associated'}</p>
+        <div class="queue-item-actions" style="display: flex; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 0.5rem;">
+          <button class="btn-delete btn-mod-unblock" data-user-id="${user.blocked_user_id}" style="color: var(--color-blue-light);">
+            Unblock Writer
+          </button>
+        </div>
+      `;
+
+      // Unblock handler
+      const unblockBtn = card.querySelector('.btn-mod-unblock') as HTMLButtonElement | null;
+      unblockBtn?.addEventListener('click', async () => {
+        const username = user.username || 'Anonymous Writer';
+        if (!confirm(`Are you sure you want to lift the community feed suspension for "${username}"?`)) return;
+        unblockBtn.disabled = true;
+
+        try {
+          const sb = await getSupabase();
+          const { error } = await sb
+            .from('blocked_users')
+            .delete()
+            .eq('id', user.blocked_user_id);
+
+          if (error) throw error;
+          showToast('Writer suspension lifted.');
+          loadModerationData();
+        } catch (err: any) {
+          console.error(err);
+          showToast(`Action failed: ${err.message}`);
+          unblockBtn.disabled = false;
+        }
+      });
+
+      modBlockedList.appendChild(card);
+    });
+  }
 </script>

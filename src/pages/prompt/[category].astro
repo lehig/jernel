@@ -122,18 +122,18 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     font-size: 0.85rem;
     font-weight: 800;
     letter-spacing: 0.1em;
-    color: var(--theme-color-dark);
+    color: var(--theme-color-light);
     background: rgba(255, 255, 255, 0.03);
     padding: 0.35rem 0.85rem;
     border-radius: 20px;
-    border: 1px solid var(--theme-color-dark);
+    border: 1px solid var(--theme-color-light);
     box-shadow: 0 0 10px var(--theme-shadow-glow);
   }
 
   .date-badge {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--color-red-dark);
+    color: var(--color-cream);
   }
 
   .prompt-section {
@@ -147,7 +147,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-red-dark);
+    color: var(--theme-color-light);
     margin: 0;
   }
 
@@ -167,7 +167,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     font-size: 1.25rem;
     line-height: 1.6;
     font-weight: 500;
-    color: var(--theme-color-dark);
+    color: #ffffff;
     margin: 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
@@ -238,9 +238,9 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     display: inline-block;
     padding: 0.6rem 1.2rem;
     border-radius: 20px;
-    border: 1px solid var(--color-red-dark);
+    border: 1px solid var(--color-red);
     background: rgba(255, 255, 255, 0.03);
-    color: var(--color-red-dark);
+    color: var(--color-red-light);
     font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
@@ -250,7 +250,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
   .btn-back:hover {
     background: rgba(255, 255, 255, 0.08);
     color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: var(--color-red-light);
   }
 
   .magnet-wrapper {
@@ -301,19 +301,20 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.04);
-    color: var(--theme-color-dark);
+    color: var(--theme-color-light);
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
     transform: translate(var(--mx, 0px), var(--my, 0px));
-    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease, color 0.2s ease, background 0.2s ease;
     will-change: transform;
   }
 
   .btn-cta-secondary:hover {
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: var(--theme-color-light);
     background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
   }
 
   /* Custom Checkbox styles */
@@ -330,7 +331,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     padding-left: 2.25rem;
     cursor: pointer;
     font-size: 0.95rem;
-    color: var(--color-red-dark);
+    color: var(--color-cream);
     user-select: none;
     transition: color 0.2s ease;
   }
@@ -418,7 +419,8 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
 
   @media (max-width: 640px) {
     #container {
-      padding-top: 80px;
+      align-items: flex-start;
+      padding-top: 110px;
     }
     .workspace-card {
       padding: 1.5rem 1.25rem;
@@ -580,9 +582,49 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
   const copyBtn = document.getElementById('copy-btn');
   const saveBtn = document.getElementById('save-btn') as HTMLButtonElement | null;
   const publicCheckbox = document.getElementById('public-checkbox') as HTMLInputElement | null;
+  const privacySection = document.querySelector('.privacy-section');
   const toast = document.getElementById('toast');
 
   let isSaved = false;
+
+  async function checkBlockedStatus() {
+    const sb = await getSupabase();
+    const { data: { session } } = await sb.auth.getSession();
+    
+    if (session) {
+      try {
+        const { data: isBlocked, error } = await sb
+          .from('blocked_users')
+          .select('id')
+          .eq('id', session.user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (isBlocked) {
+          if (publicCheckbox) {
+            publicCheckbox.checked = false;
+            publicCheckbox.disabled = true;
+          }
+          if (privacySection && !document.getElementById('block-warning')) {
+            const warning = document.createElement('div');
+            warning.id = 'block-warning';
+            warning.style.fontSize = '0.85rem';
+            warning.style.color = 'var(--color-red-light)';
+            warning.style.marginTop = '0.5rem';
+            warning.style.fontWeight = '600';
+            warning.textContent = '⚠️ Your community feed posting privileges have been suspended by moderators.';
+            privacySection.appendChild(warning);
+          }
+        }
+      } catch (err) {
+        console.error('Error checking user blocked status:', err);
+      }
+    }
+  }
+
+  // Check on load
+  checkBlockedStatus();
 
   // Load unsaved writing from sessionStorage on page load
   const sessionDraftKey = `jernel_draft_${category}`;
@@ -618,7 +660,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
     copyBtn.addEventListener('click', () => {
       const contentToCopy = textarea.value.trim();
       if (!contentToCopy) {
-        alert("Your response is empty! Write something first.");
+        showToast("Your response is empty! Write something first.");
         return;
       }
 
@@ -636,7 +678,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
 
     const responseText = textarea.value.trim();
     if (!responseText) {
-      alert("Your response is empty! Write something first.");
+      showToast("Your response is empty! Write something first.");
       return;
     }
 
@@ -650,6 +692,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
           message: 'Please sign in or sign up to save your response to your profile.',
           onSuccess: () => {
             // Re-trigger save once successfully authenticated
+            checkBlockedStatus();
             saveResponse();
           }
         }
@@ -682,7 +725,7 @@ const themeClass = category === "fiction" ? "theme-fiction" : "theme-personal";
       sessionStorage.removeItem(sessionDraftKey);
     } catch (err: any) {
       console.error('Error saving to Supabase:', err);
-      alert(`Failed to save: ${err.message || 'Unknown error'}`);
+      showToast(`Failed to save: ${err.message || 'Unknown error'}`);
       isSaved = false;
     } finally {
       if (isSaved) {

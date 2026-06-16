@@ -16,6 +16,15 @@ import Layout from "../layouts/Layout.astro";
 
     <!-- Authorized User State -->
     <div id="authorized-state" class="profile-layout" style="display: none;">
+      <!-- Suspension Warning Banner -->
+      <div id="profile-suspension-banner" class="glass-container profile-card" style="display: none; border-color: rgba(216, 30, 91, 0.4); background: rgba(216, 30, 91, 0.08); padding: 1.5rem; text-align: left; display: flex; align-items: center; gap: 1rem;">
+        <span style="font-size: 1.75rem;">⚠️</span>
+        <div>
+          <h4 style="margin: 0; color: var(--color-red-light); font-weight: 700;">Account Suspension</h4>
+          <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: rgba(255,255,255,0.85); line-height: 1.4;">Your posting privileges to the community feed have been suspended by moderators. Your responses can still be saved privately to your profile, but they cannot be shared on the public feed.</p>
+        </div>
+      </div>
+
       <!-- Profile Header / Stats Card -->
       <div class="glass-container profile-card user-header-card">
         <div class="user-info">
@@ -94,9 +103,6 @@ import Layout from "../layouts/Layout.astro";
     margin: 0 auto;
   }
 
-  .profile-card h2, p {
-    color: var(--color-red);
-  }
 
   .auth-prompt-card {
     max-width: 500px;
@@ -188,7 +194,7 @@ import Layout from "../layouts/Layout.astro";
 
   .user-email-subtitle {
     font-size: 0.85rem;
-    color: var(--color-blue-dark);
+    color: var(--color-blue-light);
     margin: 0.25rem 0 0 0;
     font-weight: 500;
   }
@@ -225,15 +231,15 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .theme-fiction-stat {
-    border-color: #5d1230be;
+    border-color: rgba(216, 30, 91, 0.45);
     background: rgba(216, 30, 91, 0.02);
     color: var(--color-red-light);
   }
 
   .theme-personal-stat {
-    border-color: var(--color-blue-dark);
+    border-color: rgba(0, 207, 193, 0.45);
     background: rgba(0, 207, 193, 0.02);
-    color: var(--color-blue);
+    color: var(--color-blue-light);
   }
 
   /* Responses Section */
@@ -319,6 +325,12 @@ import Layout from "../layouts/Layout.astro";
     box-shadow: 
       inset 0 1px 1px rgba(255, 255, 255, 0.15),
       0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .response-card.hidden-post {
+    border-color: rgba(216, 30, 91, 0.25);
+    background: rgba(216, 30, 91, 0.015);
+    opacity: 0.8;
   }
 
   .response-header {
@@ -544,8 +556,8 @@ import Layout from "../layouts/Layout.astro";
   }
 
   @media (max-width: 640px) {
-    #container {
-      padding-top: 90px;
+    #profile-container {
+      padding-top: 110px;
       padding-bottom: 2rem;
     }
     .user-header-card {
@@ -620,6 +632,31 @@ import Layout from "../layouts/Layout.astro";
   const toast = document.getElementById('toast');
 
   let activeSession: any = null;
+  const suspensionBanner = document.getElementById('profile-suspension-banner');
+  let isUserBlocked = false;
+
+  async function checkBlockedStatus(userId: string) {
+    if (!suspensionBanner) return;
+    try {
+      const sb = await getSupabase();
+      const { data: isBlocked, error } = await sb
+        .from('blocked_users')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      isUserBlocked = !!isBlocked;
+      if (isUserBlocked) {
+        suspensionBanner.style.display = 'flex';
+      } else {
+        suspensionBanner.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Error checking blocked status:', err);
+    }
+  }
 
   function showToast(message: string) {
     if (!toast) return;
@@ -651,6 +688,7 @@ import Layout from "../layouts/Layout.astro";
         userAvatarCharEl.textContent = username.charAt(0).toUpperCase();
       }
 
+      await checkBlockedStatus(session.user.id);
       loadResponses();
     } else {
       if (userState) userState.style.display = 'none';
@@ -712,7 +750,8 @@ import Layout from "../layouts/Layout.astro";
   // 3. Create DOM Elements for Response Card
   function createResponseCard(resp: any): HTMLElement {
     const card = document.createElement('div');
-    card.className = 'glass-container response-card';
+    const isHiddenByAdmin = resp.hidden_by_admin === true;
+    card.className = isHiddenByAdmin ? 'glass-container response-card hidden-post' : 'glass-container response-card';
     card.id = `resp-${resp.id}`;
 
     const date = new Date(resp.created_at);
@@ -727,10 +766,22 @@ import Layout from "../layouts/Layout.astro";
 
     const hasName = resp.writer_name && resp.writer_name !== 'Anonymous';
 
+    let privacyToggleDisabled = false;
+    let privacyWarningHtml = '';
+
+    if (isHiddenByAdmin) {
+      privacyToggleDisabled = true;
+      privacyWarningHtml = `<span style="font-size: 0.8rem; color: var(--color-red-light); font-weight: 600; display: flex; align-items: center; gap: 0.25rem; margin-left: 0.5rem;">⚠️ Removed by moderators</span>`;
+    } else if (isUserBlocked) {
+      privacyToggleDisabled = true;
+      privacyWarningHtml = `<span style="font-size: 0.8rem; color: var(--color-red-light); font-weight: 600; display: flex; align-items: center; gap: 0.25rem; margin-left: 0.5rem;">⚠️ Feed sharing suspended</span>`;
+    }
+
     card.innerHTML = `
       <div class="response-header">
         <div class="badge-row">
           <span class="category-badge-p ${categoryBadgeClass}">${resp.category.toUpperCase()}</span>
+          ${isHiddenByAdmin ? '<span class="category-badge-p fiction-badge" style="font-size: 0.7rem;">HIDDEN</span>' : ''}
           <span class="date-badge">${dateFormatted}</span>
         </div>
       </div>
@@ -740,14 +791,15 @@ import Layout from "../layouts/Layout.astro";
       <p class="response-text">${resp.response_text}</p>
       <div class="response-footer">
         <div class="footer-toggles" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
-          <div class="privacy-toggle">
-            <label class="toggle-container">
-              <input type="checkbox" class="toggle-privacy" data-id="${resp.id}" ${resp.is_public ? 'checked' : ''} />
+          <div class="privacy-toggle" style="display: flex; align-items: center; gap: 0.5rem;">
+            <label class="toggle-container" style="${privacyToggleDisabled ? 'cursor: not-allowed; opacity: 0.6;' : ''}">
+              <input type="checkbox" class="toggle-privacy" data-id="${resp.id}" ${resp.is_public && !isHiddenByAdmin ? 'checked' : ''} ${privacyToggleDisabled ? 'disabled' : ''} />
               <span class="toggle-checkmark"></span>
-              <span class="toggle-label">${resp.is_public ? 'Public' : 'Private'}</span>
+              <span class="toggle-label">${resp.is_public && !isHiddenByAdmin ? 'Public' : 'Private'}</span>
             </label>
+            ${privacyWarningHtml}
           </div>
-          <div class="name-toggle" style="display: ${resp.is_public ? 'flex' : 'none'}; align-items: center;">
+          <div class="name-toggle" style="display: ${resp.is_public && !privacyToggleDisabled ? 'flex' : 'none'}; align-items: center;">
             <label class="toggle-container">
               <input type="checkbox" class="toggle-name" data-id="${resp.id}" ${hasName ? 'checked' : ''} />
               <span class="toggle-checkmark"></span>

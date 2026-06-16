@@ -143,20 +143,20 @@ import "../styles/global.css";
 
     /* Fiction Card (Red) H2 */
     .card:nth-child(1) h2 {
-        background-image: linear-gradient(to right, var(--color-red-dark), var(--color-red));
+        background-image: linear-gradient(to right, var(--color-red), var(--color-red-light));
     }
 
     .card:nth-child(1):hover h2 {
-        background-image: linear-gradient(to right, var(--color-red), var(--color-red-light));
+        background-image: linear-gradient(to right, var(--color-red-light), #ffffff);
     }
 
     /* Personal Card (Blue) H2 */
     .card:nth-child(2) h2 {
-        background-image: linear-gradient(to right, #005f56, var(--color-blue-dark));
+        background-image: linear-gradient(to right, var(--color-blue), var(--color-blue-light));
     }
 
     .card:nth-child(2):hover h2 {
-        background-image: linear-gradient(to right, var(--color-blue), var(--color-blue-light));
+        background-image: linear-gradient(to right, var(--color-blue-light), #ffffff);
     }
 
     .card p {
@@ -168,19 +168,27 @@ import "../styles/global.css";
 
     /* Fiction Card Paragraph */
     .card:nth-child(1) p {
-        color: rgba(93, 18, 48, 0.75);
+        color: rgba(255, 255, 255, 0.7);
     }
 
     .card:nth-child(1):hover p {
-        color: var(--color-red-dark);
+        color: var(--color-red-light);
     }
 
     /* Personal Card Paragraph */
     .card:nth-child(2) p {
-        color: rgba(0, 75, 70, 0.75);
+        color: rgba(255, 255, 255, 0.7);
     }
 
     .card:nth-child(2):hover p {
-        color: var(--color-blue-dark);
+        color: var(--color-blue-light);
+    }
+
+    @media (max-width: 640px) {
+        #container {
+            align-items: flex-start;
+            padding-top: 110px;
+            padding-bottom: 2rem;
+        }
     }
 </style>
